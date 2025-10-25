@@ -7,6 +7,8 @@ export default function ScoreboardScore(){
     async function f(){
       const res = await fetch('/api/sheet?range=Out1_Oversigt');
       const j = await res.json();
+      // log the full JSON and the data array for debugging
+      try{ console.log('sheet json:', j); console.log('sheet data:', j && j.data); }catch(e){}
       if(m) setRows(j.data);
     }
     f();
