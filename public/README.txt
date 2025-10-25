@@ -1,0 +1,1 @@
+This public folder can hold static assets if you need them (images, logos, etc.).
