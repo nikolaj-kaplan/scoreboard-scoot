@@ -42,24 +42,28 @@ export default function OverlayRiderRun() {
           transform: 'skewX(-10deg)',
           marginRight: -20,
           minWidth: 460,
-          boxShadow: 'inset 0 3px 0 rgba(255,255,255,0.25), inset 0 -4px 0 rgba(0,0,0,0.5)'
+          boxShadow: 'inset 0 4px 0 rgba(255,255,255,0.3), inset 0 -5px 0 rgba(0,0,0,0.6), 0 4px 8px rgba(0,0,0,0.4)'
         }}>
           <div style={{ transform: 'skewX(10deg)', display: 'flex', alignItems: 'center', gap: 40 }}>
             <div style={{ 
-              fontSize: 40, 
-              fontWeight: 700, 
-              color: '#fff',
+              fontSize: 48, 
+              fontWeight: 900, 
+              background: 'linear-gradient(135deg, #FFD700 0%, #FFA500 50%, #FF8C00 100%)',
+              WebkitBackgroundClip: 'text',
+              WebkitTextFillColor: 'transparent',
+              backgroundClip: 'text',
               fontFamily: 'Brush Script MT, cursive',
               fontStyle: 'italic',
-              textShadow: '0 3px 6px rgba(0,0,0,0.5), 0 1px 3px rgba(0,0,0,0.3), 1px 1px 0 rgba(255,255,255,0.2)'
+              filter: 'drop-shadow(0 4px 8px rgba(0,0,0,0.8)) drop-shadow(0 2px 4px rgba(0,0,0,0.6)) drop-shadow(2px 2px 0 rgba(255,215,0,0.4)) drop-shadow(4px 4px 0 rgba(0,0,0,0.4))'
             }}>
               Mills Club
             </div>
             <div style={{
               background: 'rgba(255, 255, 255, 0.25)',
-              padding: '10px 24px'
+              padding: '10px 24px',
+              boxShadow: 'inset 0 2px 0 rgba(255,255,255,0.2), inset 0 -2px 0 rgba(0,0,0,0.3)'
             }}>
-              <div style={{ color: '#fff', fontSize: 20, fontWeight: 900, textTransform: 'uppercase', letterSpacing: 2 }}>
+              <div style={{ color: '#fff', fontSize: 20, fontWeight: 900, textTransform: 'uppercase', letterSpacing: 2, textShadow: '0 2px 4px rgba(0,0,0,0.8)' }}>
                 {riderInfo.række}
               </div>
             </div>
@@ -75,10 +79,10 @@ export default function OverlayRiderRun() {
           transform: 'skewX(-10deg)',
           marginRight: -20,
           flex: 1,
-          boxShadow: 'inset 0 3px 0 rgba(255,255,255,0.15), inset 0 -4px 0 rgba(0,0,0,0.5)'
+          boxShadow: 'inset 0 4px 0 rgba(255,255,255,0.2), inset 0 -6px 0 rgba(0,0,0,0.6), 0 4px 8px rgba(0,0,0,0.4)'
         }}>
           <div style={{ transform: 'skewX(10deg)' }}>
-            <div style={{ color: '#fff', fontSize: 40, fontWeight: 900, textTransform: 'uppercase', letterSpacing: 3 }}>
+            <div style={{ color: '#fff', fontSize: 40, fontWeight: 900, textTransform: 'uppercase', letterSpacing: 3, textShadow: '0 4px 8px rgba(0,0,0,0.8), 0 2px 4px rgba(0,0,0,0.6)' }}>
               {riderInfo.navn}
             </div>
           </div>
@@ -100,12 +104,12 @@ export default function OverlayRiderRun() {
             minWidth: 140,
             textAlign: 'center',
             borderLeft: '2px solid #000',
-            boxShadow: 'inset 0 2px 0 rgba(255,255,255,0.08), inset 0 -3px 0 rgba(0,0,0,0.4)'
+            boxShadow: 'inset 0 3px 0 rgba(255,255,255,0.12), inset 0 -4px 0 rgba(0,0,0,0.5), 0 3px 6px rgba(0,0,0,0.3)'
           }}>
-            <div style={{ color: '#888', fontSize: 16, marginBottom: 6, textTransform: 'uppercase', letterSpacing: 2, fontWeight: 700 }}>
+            <div style={{ color: '#888', fontSize: 16, marginBottom: 6, textTransform: 'uppercase', letterSpacing: 2, fontWeight: 700, textShadow: '0 2px 4px rgba(0,0,0,0.6)' }}>
               RUN 1
             </div>
-            <div style={{ color: '#fff', fontSize: 32, fontWeight: 900 }}>
+            <div style={{ color: '#fff', fontSize: 32, fontWeight: 900, textShadow: '0 3px 6px rgba(0,0,0,0.8), 0 2px 4px rgba(0,0,0,0.6)' }}>
               {riderInfo.run1}
             </div>
           </div>
@@ -120,12 +124,12 @@ export default function OverlayRiderRun() {
             minWidth: 140,
             textAlign: 'center',
             borderLeft: '2px solid #000',
-            boxShadow: 'inset 0 2px 0 rgba(255,255,255,0.08), inset 0 -3px 0 rgba(0,0,0,0.4)'
+            boxShadow: 'inset 0 3px 0 rgba(255,255,255,0.12), inset 0 -4px 0 rgba(0,0,0,0.5), 0 3px 6px rgba(0,0,0,0.3)'
           }}>
-            <div style={{ color: '#888', fontSize: 16, marginBottom: 6, textTransform: 'uppercase', letterSpacing: 2, fontWeight: 700 }}>
+            <div style={{ color: '#888', fontSize: 16, marginBottom: 6, textTransform: 'uppercase', letterSpacing: 2, fontWeight: 700, textShadow: '0 2px 4px rgba(0,0,0,0.6)' }}>
               RUN 2
             </div>
-            <div style={{ color: '#fff', fontSize: 32, fontWeight: 900 }}>
+            <div style={{ color: '#fff', fontSize: 32, fontWeight: 900, textShadow: '0 3px 6px rgba(0,0,0,0.8), 0 2px 4px rgba(0,0,0,0.6)' }}>
               {riderInfo.run2}
             </div>
           </div>
@@ -140,12 +144,12 @@ export default function OverlayRiderRun() {
             minWidth: 160,
             textAlign: 'center',
             borderLeft: '2px solid #000',
-            boxShadow: 'inset 0 3px 0 rgba(255,255,255,0.25), inset 0 -4px 0 rgba(0,0,0,0.5)'
+            boxShadow: 'inset 0 4px 0 rgba(255,255,255,0.3), inset 0 -5px 0 rgba(0,0,0,0.6), 0 4px 8px rgba(0,0,0,0.3)'
           }}>
-            <div style={{ color: '#cce5ff', fontSize: 16, marginBottom: 6, textTransform: 'uppercase', letterSpacing: 2, fontWeight: 700 }}>
+            <div style={{ color: '#cce5ff', fontSize: 16, marginBottom: 6, textTransform: 'uppercase', letterSpacing: 2, fontWeight: 700, textShadow: '0 2px 4px rgba(0,0,0,0.6)' }}>
               BEST RUN
             </div>
-            <div style={{ color: '#fff', fontSize: 36, fontWeight: 900 }}>
+            <div style={{ color: '#fff', fontSize: 36, fontWeight: 900, textShadow: '0 4px 8px rgba(0,0,0,0.8), 0 2px 4px rgba(0,0,0,0.6)' }}>
               {riderInfo.bestRun}
             </div>
           </div>

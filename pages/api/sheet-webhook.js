@@ -1,8 +1,16 @@
 // Webhook endpoint for Google Apps Script to notify when sheet changes
-// This will trigger a cache refresh by fetching the latest data
+// Receives sheet data directly from the webhook and broadcasts to all clients via Pusher
 
-import { setCache, clearCache, getCacheInfo } from '../../lib/sheetCache';
-import { fetchAllSheetData } from '../../lib/googleSheets';
+import Pusher from 'pusher';
+
+// Initialize Pusher (credentials from environment variables)
+const pusher = new Pusher({
+  appId: process.env.PUSHER_APP_ID,
+  key: process.env.PUSHER_KEY,
+  secret: process.env.PUSHER_SECRET,
+  cluster: process.env.PUSHER_CLUSTER || 'eu',
+  useTLS: true
+});
 
 export default async function handler(req, res) {
   // Only accept POST requests
@@ -20,39 +28,52 @@ export default async function handler(req, res) {
   }
 
   try {
-    // Clear the cache first
-    console.log('🗑️  Clearing cache...');
-    clearCache();
-
-    // Fetch all data from Google Sheets
-    console.log('📡 Fetching fresh data from Google Sheets...');
-    const allData = await fetchAllSheetData();
+    // Get sheet data from webhook payload
+    const allData = req.body?.data;
     
-    // Update the cache with fresh data
-    setCache('all', allData);
-
+    if (!allData || typeof allData !== 'object') {
+      throw new Error('No sheet data in webhook payload. Make sure Google Apps Script is sending the data.');
+    }
+    
     const sheetNames = Object.keys(allData);
     const totalRows = Object.values(allData).reduce((sum, rows) => sum + rows.length, 0);
     
-    console.log('✅ WEBHOOK PROCESSING COMPLETE:');
-    console.log(`   Sheets refreshed: ${sheetNames.join(', ')}`);
+    console.log(`📊 Data received from webhook:`);
+    console.log(`   Sheets: ${sheetNames.join(', ')}`);
     console.log(`   Total rows: ${totalRows}`);
-    console.log(`   Cache updated at: ${new Date().toISOString()}`);
+    
+    // Broadcast to all connected Pusher clients
+    const timestamp = new Date().toISOString();
+    console.log('📡 Broadcasting update to all connected clients via Pusher...');
+    console.log(`   Channel: sheet-updates`);
+    console.log(`   Event: sheet-update`);
+    console.log(`   Payload size: ${JSON.stringify({ data: allData, timestamp }).length} bytes`);
+    
+    await pusher.trigger('sheet-updates', 'sheet-update', {
+      data: allData,
+      timestamp
+    });
+    
+    console.log('✅ Pusher broadcast complete - clients should receive update now!');
+    
+    console.log('✅ WEBHOOK PROCESSING COMPLETE:');
+    console.log(`   Sheets broadcasted: ${sheetNames.join(', ')}`);
+    console.log(`   Total rows: ${totalRows}`);
+    console.log(`   Timestamp: ${timestamp}`);
     console.log('🔔━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n');
 
     return res.status(200).json({ 
       success: true, 
       sheets: sheetNames,
       totalRows,
-      timestamp: new Date().toISOString(),
-      cacheInfo: getCacheInfo()
+      timestamp
     });
   } catch (error) {
     console.error('❌ WEBHOOK ERROR:', error.message);
     console.error('Stack:', error.stack);
     console.log('🔔━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n');
     return res.status(500).json({ 
-      error: 'Failed to refresh cache',
+      error: 'Failed to process webhook',
       message: error.message 
     });
   }

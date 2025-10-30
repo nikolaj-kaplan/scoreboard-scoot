@@ -53,7 +53,7 @@ export default function OverlayRiderPresentation() {
               flex: 1,
               transform: 'skewX(-10deg)',
               marginRight: -30,
-              boxShadow: 'inset 0 3px 0 rgba(255,255,255,0.25), inset 0 -4px 0 rgba(0,0,0,0.5)'
+              boxShadow: 'inset 0 4px 0 rgba(255,255,255,0.3), inset 0 -6px 0 rgba(0,0,0,0.6), 0 8px 16px rgba(0,0,0,0.5), 0 4px 8px rgba(0,0,0,0.4)'
             }}>
               <div style={{ transform: 'skewX(10deg)' }}>
                 <div style={{ 
@@ -62,7 +62,8 @@ export default function OverlayRiderPresentation() {
                   color: '#fff',
                   letterSpacing: 6,
                   textTransform: 'uppercase',
-                  textAlign: 'center'
+                  textAlign: 'center',
+                  textShadow: '0 6px 12px rgba(0,0,0,0.8), 0 3px 6px rgba(0,0,0,0.6), 2px 2px 0 rgba(0,0,0,0.5), 4px 4px 0 rgba(0,0,0,0.3)'
                 }}>
                   {riderInfo.navn}
                 </div>
@@ -78,14 +79,15 @@ export default function OverlayRiderPresentation() {
               justifyContent: 'center',
               transform: 'skewX(-10deg)',
               minWidth: 280,
-              boxShadow: 'inset 0 3px 0 rgba(255,255,255,0.15), inset 0 -4px 0 rgba(0,0,0,0.5)'
+              boxShadow: 'inset 0 4px 0 rgba(255,255,255,0.2), inset 0 -6px 0 rgba(0,0,0,0.6), 0 8px 16px rgba(0,0,0,0.5), 0 4px 8px rgba(0,0,0,0.4)'
             }}>
               <div style={{ transform: 'skewX(10deg)' }}>
                 <div style={{ 
                   fontSize: 48, 
                   fontWeight: 900, 
                   color: '#fff',
-                  letterSpacing: 2
+                  letterSpacing: 2,
+                  textShadow: '0 6px 12px rgba(0,0,0,0.8), 0 3px 6px rgba(0,0,0,0.6), 2px 2px 0 rgba(0,0,0,0.5), 4px 4px 0 rgba(0,0,0,0.3)'
                 }}>
                   {riderInfo.række}
                 </div>
@@ -96,30 +98,41 @@ export default function OverlayRiderPresentation() {
           {/* Branding */}
           <div style={{
             position: 'absolute',
-            top: -60,
+            top: -80,
             right: 0,
             textAlign: 'right'
           }}>
             <div style={{ 
-              fontSize: 56, 
-              fontWeight: 700, 
-              color: '#1e40af',
+              fontSize: 96, 
+              fontWeight: 900, 
+              background: 'linear-gradient(135deg, #FFD700 0%, #FFA500 50%, #FF8C00 100%)',
+              WebkitBackgroundClip: 'text',
+              WebkitTextFillColor: 'transparent',
+              backgroundClip: 'text',
               fontFamily: 'Brush Script MT, cursive',
               fontStyle: 'italic',
-              marginBottom: 8,
-              textShadow: '0 4px 8px rgba(0,0,0,0.5), 0 2px 4px rgba(0,0,0,0.3), 2px 2px 0 rgba(255,255,255,0.2)'
+              marginBottom: 12,
+              filter: 'drop-shadow(0 8px 16px rgba(0,0,0,0.8)) drop-shadow(0 4px 8px rgba(0,0,0,0.6)) drop-shadow(3px 3px 0 rgba(255,215,0,0.4)) drop-shadow(6px 6px 0 rgba(0,0,0,0.4))'
             }}>
               Mills Club
             </div>
             <div style={{ 
-              fontSize: 22, 
-              fontWeight: 700, 
-              color: '#888',
-              letterSpacing: 3,
+              fontSize: 26, 
+              fontWeight: 900, 
+              background: 'linear-gradient(135deg, #1e40af 0%, #3b82f6 50%, #60a5fa 100%)',
+              padding: '8px 20px',
+              color: '#fff',
+              letterSpacing: 4,
               textTransform: 'uppercase',
-              textShadow: '0 2px 4px rgba(0,0,0,0.5), 1px 1px 0 rgba(255,255,255,0.1)'
+              display: 'inline-block',
+              transform: 'skewX(-5deg)',
+              boxShadow: '0 6px 12px rgba(0,0,0,0.6), 0 3px 6px rgba(0,0,0,0.4), inset 0 2px 0 rgba(255,255,255,0.3), inset 0 -2px 0 rgba(0,0,0,0.4)',
+              textShadow: '0 3px 6px rgba(0,0,0,0.8), 0 2px 4px rgba(0,0,0,0.6), 1px 1px 0 rgba(0,0,0,0.5)',
+              border: '2px solid rgba(255,255,255,0.2)'
             }}>
-              Sjællandsmesterskaberne
+              <span style={{ display: 'inline-block', transform: 'skewX(5deg)' }}>
+                Sjællandsmesterskaberne
+              </span>
             </div>
           </div>
         </div>
@@ -134,12 +147,12 @@ export default function OverlayRiderPresentation() {
           <div style={{ 
             background: 'linear-gradient(to bottom, #2a2a2a 0%, #1a1a1a 100%)',
             padding: '28px 32px',
-            boxShadow: 'inset 0 2px 0 rgba(255,255,255,0.08), inset 0 -3px 0 rgba(0,0,0,0.4)'
+            boxShadow: 'inset 0 3px 0 rgba(255,255,255,0.12), inset 0 -4px 0 rgba(0,0,0,0.5), 0 3px 6px rgba(0,0,0,0.3)'
           }}>
-            <div style={{ color: '#888', fontSize: 18, marginBottom: 12, textTransform: 'uppercase', letterSpacing: 2, fontWeight: 600 }}>
+            <div style={{ color: '#888', fontSize: 18, marginBottom: 12, textTransform: 'uppercase', letterSpacing: 2, fontWeight: 600, textShadow: '0 2px 4px rgba(0,0,0,0.6)' }}>
               ALDER
             </div>
-            <div style={{ color: '#fff', fontSize: 42, fontWeight: 900 }}>
+            <div style={{ color: '#fff', fontSize: 42, fontWeight: 900, textShadow: '0 4px 8px rgba(0,0,0,0.8), 0 2px 4px rgba(0,0,0,0.6)' }}>
               {riderInfo.alder}
             </div>
           </div>
@@ -147,12 +160,12 @@ export default function OverlayRiderPresentation() {
           <div style={{ 
             background: 'linear-gradient(to bottom, #2a2a2a 0%, #1a1a1a 100%)',
             padding: '28px 32px',
-            boxShadow: 'inset 0 2px 0 rgba(255,255,255,0.08), inset 0 -3px 0 rgba(0,0,0,0.4)'
+            boxShadow: 'inset 0 3px 0 rgba(255,255,255,0.12), inset 0 -4px 0 rgba(0,0,0,0.5), 0 3px 6px rgba(0,0,0,0.3)'
           }}>
-            <div style={{ color: '#888', fontSize: 18, marginBottom: 12, textTransform: 'uppercase', letterSpacing: 2, fontWeight: 600 }}>
+            <div style={{ color: '#888', fontSize: 18, marginBottom: 12, textTransform: 'uppercase', letterSpacing: 2, fontWeight: 600, textShadow: '0 2px 4px rgba(0,0,0,0.6)' }}>
               KLUB/HOLD
             </div>
-            <div style={{ color: '#fff', fontSize: 32, fontWeight: 700, lineHeight: 1.2 }}>
+            <div style={{ color: '#fff', fontSize: 32, fontWeight: 700, lineHeight: 1.2, textShadow: '0 3px 6px rgba(0,0,0,0.8), 0 2px 4px rgba(0,0,0,0.6)' }}>
               {riderInfo.klub}
             </div>
           </div>
@@ -161,12 +174,12 @@ export default function OverlayRiderPresentation() {
             background: 'linear-gradient(to bottom, #1e40af 0%, #1e3a8a 100%)',
             padding: '28px 32px',
             gridColumn: 'span 2',
-            boxShadow: 'inset 0 3px 0 rgba(255,255,255,0.25), inset 0 -4px 0 rgba(0,0,0,0.5)'
+            boxShadow: 'inset 0 4px 0 rgba(255,255,255,0.3), inset 0 -5px 0 rgba(0,0,0,0.6), 0 4px 8px rgba(0,0,0,0.3)'
           }}>
-            <div style={{ color: '#cce5ff', fontSize: 18, marginBottom: 12, textTransform: 'uppercase', letterSpacing: 2, fontWeight: 600 }}>
+            <div style={{ color: '#cce5ff', fontSize: 18, marginBottom: 12, textTransform: 'uppercase', letterSpacing: 2, fontWeight: 600, textShadow: '0 2px 4px rgba(0,0,0,0.6)' }}>
               BEDSTE PLACERING
             </div>
-            <div style={{ color: '#fff', fontSize: 42, fontWeight: 900 }}>
+            <div style={{ color: '#fff', fontSize: 42, fontWeight: 900, textShadow: '0 4px 8px rgba(0,0,0,0.8), 0 2px 4px rgba(0,0,0,0.6)' }}>
               {riderInfo.bedstePlacering}
             </div>
           </div>
@@ -178,12 +191,12 @@ export default function OverlayRiderPresentation() {
             background: 'linear-gradient(to bottom, #2a2a2a 0%, #1a1a1a 100%)',
             padding: '32px 40px',
             marginBottom: 24,
-            boxShadow: 'inset 0 2px 0 rgba(255,255,255,0.08), inset 0 -3px 0 rgba(0,0,0,0.4)'
+            boxShadow: 'inset 0 3px 0 rgba(255,255,255,0.12), inset 0 -4px 0 rgba(0,0,0,0.5), 0 3px 6px rgba(0,0,0,0.3)'
           }}>
-            <div style={{ color: '#1e40af', fontSize: 20, marginBottom: 16, textTransform: 'uppercase', letterSpacing: 2, fontWeight: 700 }}>
+            <div style={{ color: '#1e40af', fontSize: 20, marginBottom: 16, textTransform: 'uppercase', letterSpacing: 2, fontWeight: 700, textShadow: '0 2px 4px rgba(0,0,0,0.6)' }}>
               BEDSTE TRICK
             </div>
-            <div style={{ color: '#fff', fontSize: 36, fontWeight: 900, letterSpacing: 1 }}>
+            <div style={{ color: '#fff', fontSize: 36, fontWeight: 900, letterSpacing: 1, textShadow: '0 4px 8px rgba(0,0,0,0.8), 0 2px 4px rgba(0,0,0,0.6)' }}>
               {riderInfo.bedsteTrick}
             </div>
           </div>
@@ -195,12 +208,12 @@ export default function OverlayRiderPresentation() {
             background: 'linear-gradient(to bottom, #2a2a2a 0%, #1a1a1a 100%)',
             padding: '32px 40px',
             marginBottom: 24,
-            boxShadow: 'inset 0 2px 0 rgba(255,255,255,0.08), inset 0 -3px 0 rgba(0,0,0,0.4)'
+            boxShadow: 'inset 0 3px 0 rgba(255,255,255,0.12), inset 0 -4px 0 rgba(0,0,0,0.5), 0 3px 6px rgba(0,0,0,0.3)'
           }}>
-            <div style={{ color: '#888', fontSize: 20, marginBottom: 16, textTransform: 'uppercase', letterSpacing: 2, fontWeight: 700 }}>
+            <div style={{ color: '#888', fontSize: 20, marginBottom: 16, textTransform: 'uppercase', letterSpacing: 2, fontWeight: 700, textShadow: '0 2px 4px rgba(0,0,0,0.6)' }}>
               FUN FACT
             </div>
-            <div style={{ color: '#fff', fontSize: 28, lineHeight: 1.6, fontWeight: 500 }}>
+            <div style={{ color: '#fff', fontSize: 28, lineHeight: 1.6, fontWeight: 500, textShadow: '0 3px 6px rgba(0,0,0,0.8), 0 2px 4px rgba(0,0,0,0.6)' }}>
               {riderInfo.funFact}
             </div>
           </div>
@@ -214,10 +227,10 @@ export default function OverlayRiderPresentation() {
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            boxShadow: 'inset 0 3px 0 rgba(255,255,255,0.25), inset 0 -4px 0 rgba(0,0,0,0.5)'
+            boxShadow: 'inset 0 4px 0 rgba(255,255,255,0.3), inset 0 -5px 0 rgba(0,0,0,0.6), 0 4px 8px rgba(0,0,0,0.3)'
           }}>
             <span style={{ color: '#fff', fontSize: 32, marginRight: 20, fontWeight: 700 }}>📱</span>
-            <span style={{ color: '#fff', fontSize: 32, fontWeight: 700, letterSpacing: 1 }}>
+            <span style={{ color: '#fff', fontSize: 32, fontWeight: 700, letterSpacing: 1, textShadow: '0 3px 6px rgba(0,0,0,0.8), 0 2px 4px rgba(0,0,0,0.6)' }}>
               @{riderInfo.instagram}
             </span>
           </div>

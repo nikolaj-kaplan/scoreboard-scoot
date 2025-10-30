@@ -1,17 +1,42 @@
-# Google Sheets Webhook Setup Guide
+# Google Sheets Real-Time Updates Setup Guide
 
-This setup allows your Google Sheet to notify the Next.js server when data changes, so the server can refresh its cache immediately instead of constantly polling Google Sheets.
+This setup enables real-time updates from Google Sheets to your Next.js app using **Pusher Channels** and **Google Apps Script webhooks**.
 
 ## Architecture
 
-- **Client (Browser)** → Polls `/api/sheet` frequently (e.g., every 5 seconds) - this is fast because it returns cached data
-- **Server** → Caches Google Sheets data in memory
-- **Google Apps Script** → Calls `/api/sheet-webhook` when sheet changes
-- **Webhook Handler** → Fetches fresh data from Google Sheets and updates cache
+- **Client (Browser)** → Fetches initial data from `/api/sheet`, then connects to Pusher for real-time updates
+- **Google Apps Script** → Fetches all "Out*" sheets data and sends to webhook when changes occur
+- **Webhook Handler** → Receives data and broadcasts to all connected clients via Pusher
+- **Pusher** → Delivers updates instantly to all connected browsers
+
+**Key Benefits:**
+- ✅ No polling needed
+- ✅ No cache complexity
+- ✅ Instant updates (sub-second latency)
+- ✅ Works on Vercel serverless
+- ✅ Data included in webhook (no extra API calls)
 
 ## Setup Steps
 
-### 1. Expose Your Local Server (Development Only)
+### 1. Set Up Pusher (Required)
+
+See `PUSHER_SETUP.md` for detailed Pusher configuration instructions.
+
+**Quick summary:**
+1. Create free account at [pusher.com](https://pusher.com)
+2. Create a **Channels** app (not Beams/Push Notifications)
+3. Add credentials to `.env.local`:
+```bash
+PUSHER_APP_ID=your_app_id
+PUSHER_KEY=your_key
+PUSHER_SECRET=your_secret
+PUSHER_CLUSTER=eu
+
+NEXT_PUBLIC_PUSHER_KEY=your_key
+NEXT_PUBLIC_PUSHER_CLUSTER=eu
+```
+
+### 2. Expose Your Local Server (Development Only)
 
 For local development, you need to expose your localhost so Google can reach it.
 
@@ -33,115 +58,30 @@ lt --port 3000
 
 **For Production:** Deploy to Vercel/Netlify/etc. and use your production URL.
 
-### 2. Add Google Apps Script to Your Sheet
+### 3. Add Google Apps Script to Your Sheet
 
 1. Open your Google Sheet
 2. Click **Extensions** → **Apps Script**
 3. Delete any existing code
-4. Paste the code below
-5. Update the `WEBHOOK_URLS` array with your server URLs
+4. Copy the code from `google-apps-script.js` in this repository
+5. Update the `WEBHOOK_URLS` array with your server URL(s)
+6. **Save** the script
 
-```javascript
-// ============================================
-// Google Apps Script: Sheet Change Webhook
-// ============================================
+**Important:** The script automatically:
+- Fetches **ONLY sheets starting with "Out"**
+- Includes ALL sheet data in the webhook payload
+- Sends to all configured webhook URLs
+- **Data structure is identical to `/api/sheet` response**
 
-// IMPORTANT: Update these URLs!
-// You can add multiple URLs to notify multiple servers
-const WEBHOOK_URLS = [
-  'https://xkr2cvs3-3000.euw.devtunnels.ms/',
-  'https://scoreboard-scoot-521863-hw2w0skl7-nikolaj-kaplans-projects.vercel.app/'
-];
+### 4. Set Up Installable Triggers (Required for onChange)
 
-/**
- * Sends webhook notifications to all configured URLs
- * The webhook just notifies that something changed - the server decides what to fetch
- */
-function sendWebhook(eventType, changeDetails) {
-  const payload = {
-    event: eventType,
-    timestamp: new Date().toISOString(),
-    changeDetails: changeDetails || {}
-  };
+### 4. Set Up Installable Triggers (Required)
 
-  const options = {
-    method: 'post',
-    contentType: 'application/json',
-    payload: JSON.stringify(payload),
-    muteHttpExceptions: true
-  };
-
-  // Send to all URLs, ignore errors
-  WEBHOOK_URLS.forEach(function(url) {
-    try {
-      const response = UrlFetchApp.fetch(url, options);
-      const responseCode = response.getResponseCode();
-      
-      if (responseCode === 200) {
-        console.log('Webhook sent successfully to:', url);
-      } else {
-        console.warn('Webhook failed for:', url, 'Status:', responseCode);
-      }
-    } catch (error) {
-      // Ignore errors so other URLs still get called
-      console.warn('Error sending webhook to:', url, error.toString());
-    }
-  });
-}
-
-/**
- * Triggered when a cell is edited
- * This is a simple trigger (no authorization dialog needed for basic edits)
- */
-function onEdit(e) {
-  // For simple edits, send webhook immediately
-  const sheet = e.range.getSheet();
-  const details = {
-    sheetName: sheet.getName(),
-    range: e.range.getA1Notation(),
-    oldValue: e.oldValue,
-    value: e.value
-  };
-  
-  sendWebhook('edit', details);
-}
-
-/**
- * Triggered when sheet structure changes (rows/columns added, sheets renamed, etc.)
- * This requires an INSTALLABLE trigger (see setup instructions below)
- */
-function onChange(e) {
-  const details = {
-    changeType: e.changeType,
-    triggerUid: e.triggerUid
-  };
-  
-  sendWebhook('change', details);
-}
-
-/**
- * Manual trigger function - use this to test your webhook
- */
-function testWebhook() {
-  sendWebhook('test', { message: 'Manual test trigger' });
-  
-  // Show result in Apps Script UI
-  SpreadsheetApp.getUi().alert(
-    'Webhook Test',
-    'Test webhook sent to ' + WEBHOOK_URLS.length + ' URL(s)\n\n' +
-    'Check your server console(s) for the result.',
-    SpreadsheetApp.getUi().ButtonSet.OK
-  );
-}
-```
-
-### 3. Set Up Installable Triggers (Required for onChange)
-
-The `onEdit` simple trigger works automatically, but for `onChange` you need an installable trigger:
+The `onEdit` simple trigger works automatically for basic cell edits, but for more reliable notifications and to catch structural changes, set up installable triggers:
 
 1. In Apps Script editor, click the **clock icon** (Triggers) in the left sidebar
 2. Click **+ Add Trigger** (bottom right)
-3. Configure:
+3. Configure for **onChange**:
    - Choose which function to run: **`onChange`**
    - Choose which deployment should run: **Head**
    - Select event source: **From spreadsheet**
@@ -149,10 +89,10 @@ The `onEdit` simple trigger works automatically, but for `onChange` you need an 
 4. Click **Save**
 5. Grant permissions if prompted
 
-**Optional:** You can also add an installable trigger for `onEdit` if you want more reliable edit notifications:
+**Recommended:** Also add an installable trigger for `onEdit` for more reliable edit notifications:
 - Repeat above steps but choose function **`onEdit`** and event type **On edit**
 
-### 4. Test the Setup
+### 5. Test the Setup
 
 #### Test 1: Manual Webhook Test
 
@@ -160,80 +100,184 @@ The `onEdit` simple trigger works automatically, but for `onChange` you need an 
 2. Click **Run** (play button)
 3. Check your Next.js server console - you should see:
    ```
-   Sheet webhook received: { event: 'test', range: 'Out1_Oversigt', ... }
-   Cache refreshed: X rows fetched for range Out1_Oversigt
+   🔔 WEBHOOK RECEIVED from Google Sheets
+   Event: test
+   📊 Data received from webhook:
+      Sheets: Out1_Oversigt, Out2_Results, ...
+      Total rows: 150
+   📡 Broadcasting update to all connected clients via Pusher...
+   ✅ Pusher broadcast complete
+   ```
+4. Check browser console - should see:
+   ```
+   🔔 REAL-TIME UPDATE RECEIVED FROM PUSHER
    ```
 
 #### Test 2: Edit a Cell
 
-1. Edit any cell in your Google Sheet
-2. Check your server console - should see webhook notification
-3. Open your scoreboard page - should see updated data immediately
+1. Edit any cell in a sheet starting with "Out"
+2. Check your server console - should see webhook notification with data
+3. All open browser tabs should update instantly
+4. Check browser console for Pusher event logs
 
-#### Test 3: Verify Cache is Working
+#### Test 3: Preview Data Structure
 
-1. Open browser console on your scoreboard page
-2. You should see: `sheet json: { cached: true, data: [...], timestamp: ... }`
-3. Edit the sheet
-4. Next poll should show `cached: false` (fresh fetch), then back to `cached: true`
+Run the `previewData()` function in Apps Script to see:
+- Which sheets will be sent (all starting with "Out")
+- How many rows each sheet has
+- The complete data structure
 
-### 5. Troubleshooting
+### 6. Troubleshooting
 
 **Webhook not being called:**
-- Check ngrok is running and URL is correct in Apps Script
-- Check Apps Script execution logs: **Project Settings** → **Executions**
+- Check ngrok/tunnel is running and URL is correct in Apps Script
+- Check Apps Script execution logs: **View** → **Executions**
 - Make sure installable triggers are configured correctly
 
-**500 Server Error:**
-- Check server logs for detailed error message
-- Verify Google Sheets API credentials are correct
-- Ensure `SHEET_ID` or `SHEET_URL` and `GOOGLE_SERVICE_ACCOUNT` env vars are set
+**No data in webhook:**
+- Verify you're using the code from `google-apps-script.js`
+- Run `previewData()` to see what data would be sent
+- Check Apps Script logs for errors
 
-**Cache not updating:**
-- Verify webhook endpoint is being called (check server logs)
-- Check that the `range` parameter matches what your app uses
-- Try manually calling `clearCache()` from server console
+**Pusher not broadcasting:**
+- Verify Pusher credentials in `.env.local`
+- Check Pusher dashboard for connection count and messages
+- Ensure server is running and webhook can reach it
 
-### 6. Production Deployment
+**Clients not receiving updates:**
+- Check browser console for Pusher connection status
+- Verify `NEXT_PUBLIC_PUSHER_KEY` and `NEXT_PUBLIC_PUSHER_CLUSTER` are set
+- Restart dev server after adding environment variables
 
-When deploying to production (Vercel, Netlify, etc.):
+### 7. Production Deployment
 
-1. Add your production URL to the `WEBHOOK_URLS` array in Apps Script
-2. Redeploy your Next.js app
-3. Test the webhook again using the `testWebhook()` function
+When deploying to Vercel:
 
-### 7. Security Notes
+1. **Add environment variables** in Vercel project settings:
+   - All Pusher variables (both server and client)
+   - Google Sheets credentials
+   
+2. **Update Apps Script:**
+   - Add your production URL to `WEBHOOK_URLS` array
+   - Example: `'https://your-app.vercel.app/api/sheet-webhook'`
 
-- **Always use HTTPS** for webhook URLs (ngrok provides this automatically)
-- **No authentication** - endpoint is open (fine for non-sensitive operations)
-- **Consider adding authentication** if your sheet contains sensitive data
-- For production with sensitive data, add IP allowlisting or implement token-based auth
+3. **Deploy and test:**
+   - Deploy your app
+   - Run `testWebhook()` from Apps Script
+   - Check Vercel function logs
+   - Test by editing a cell
 
-### 8. Performance Benefits
+### 8. Security Notes
 
-With this setup:
-- ✅ Clients can poll every 1-5 seconds without hitting rate limits
-- ✅ Google Sheets API is only called when data actually changes
-- ✅ Sub-second latency for clients (cached responses)
-- ✅ No polling delay - updates appear immediately when sheet changes
+- **HTTPS required** - Webhooks must use HTTPS (ngrok/Vercel provide this)
+- **No authentication** - Endpoint is open by default
+- **Consider authentication** for sensitive data:
+  - Add secret token validation
+  - Use Vercel Edge Config for allowlists
+  - Implement IP filtering
 
-### 9. Monitoring
+### 9. Performance & Reliability
 
-Add logging to track webhook activity:
+**What happens when:**
 
-```javascript
-// In your Apps Script
-function logWebhookActivity(eventType, success) {
-  const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('WebhookLog');
-  if (!sheet) return; // Create a sheet named 'WebhookLog' if you want logging
-  
-  sheet.appendRow([
-    new Date(),
-    eventType,
-    success ? 'SUCCESS' : 'FAILED',
-    WEBHOOK_URLS.join(', ')
-  ]);
+- **Page loads** → Fetches initial data from `/api/sheet` (Google Sheets API)
+- **Sheet edited** → Webhook pushes data → Pusher broadcasts → Instant UI update
+- **Connection drops** → Pusher auto-reconnects, page can manually refresh if needed
+- **Multiple clients** → All receive updates simultaneously via Pusher
+
+**Benefits of this architecture:**
+- ✅ No polling overhead
+- ✅ Minimal Google Sheets API usage (only on initial load)
+- ✅ Scales infinitely with Pusher (200k messages/day free)
+- ✅ Works perfectly on Vercel serverless
+- ✅ Sub-second update latency
+
+**Benefits of this architecture:**
+- ✅ No polling overhead
+- ✅ Minimal Google Sheets API usage (only on initial load)
+- ✅ Scales infinitely with Pusher (200k messages/day free)
+- ✅ Works perfectly on Vercel serverless
+- ✅ Sub-second update latency
+
+### 10. Monitoring
+
+**Server logs** show:
+- When webhook is received
+- Which sheets were included
+- Pusher broadcast status
+
+**Browser console** shows:
+- Pusher connection status
+- When real-time updates are received
+- What data was updated
+
+**Pusher Dashboard** shows:
+- Active connections
+- Messages sent
+- Usage statistics
+
+### 11. Data Structure
+
+Both `/api/sheet` (initial load) and webhook push use **identical data structure**:
+
+```json
+{
+  "data": {
+    "Out1_Oversigt": [
+      ["Header1", "Header2", "Header3"],
+      ["Row1Col1", "Row1Col2", "Row1Col3"],
+      ["Row2Col1", "Row2Col2", "Row2Col3"]
+    ],
+    "Out2_Results": [
+      ["Name", "Score", "Time"],
+      ["Alice", "100", "12:34"],
+      ["Bob", "95", "13:45"]
+    ]
+  },
+  "timestamp": "2025-10-30T12:34:56.789Z"
 }
+```
+
+**Key points:**
+- Only sheets starting with "Out" are included
+- Each sheet is an array of arrays (rows)
+- First row typically contains headers
+- Data structure is identical from both sources
+- Client code doesn't need to know the source
+
+## Data Flow Diagram
+
+```
+┌─────────────┐         ┌──────────────┐         ┌─────────────┐
+│   Browser   │         │  Next.js     │         │   Google    │
+│   Client    │         │  Serverless  │         │   Sheets    │
+└──────┬──────┘         └──────┬───────┘         └──────┬──────┘
+       │                       │                        │
+       │ 1. Initial load       │                        │
+       │ GET /api/sheet        │                        │
+       ├──────────────────────>│                        │
+       │                       │ Fetch "Out*" sheets    │
+       │                       ├───────────────────────>│
+       │                       │                        │
+       │                       │ Return data            │
+       │                       │<───────────────────────┤
+       │ Initial data          │                        │
+       │<──────────────────────┤                        │
+       │                       │                        │
+       │ 2. Connect Pusher     │                        │
+       ├──────────────────────>│                        │
+       │                       │                        │
+       │                       │                        │
+       │                       │ 3. Sheet edited        │
+       │                       │ Apps Script webhook    │
+       │                       │ (includes "Out*" data) │
+       │                       │<───────────────────────┤
+       │                       │                        │
+       │                       │ 4. Broadcast via       │
+       │ 5. Instant update!    │    Pusher              │
+       │<══════════════════════┤<──────────────────────┐│
+       │ (all clients at once) │    Pusher Channels    ││
+       │                       │                        ││
 ```
 
 ## Multiple URLs Feature
@@ -259,54 +303,20 @@ const WEBHOOK_URLS = [
 - Errors are logged but don't prevent other URLs from being called
 - All URLs receive the webhook even if some fail
 
-## Architecture Diagram
+## Files in This Project
 
-```
-┌─────────────┐         ┌──────────────┐         ┌─────────────┐
-│   Browser   │         │  Next.js     │         │   Google    │
-│   Client    │         │  Server      │         │   Sheets    │
-└──────┬──────┘         └──────┬───────┘         └──────┬──────┘
-       │                       │                        │
-       │  Poll /api/sheet      │                        │
-       │  (every 5s)           │                        │
-       ├──────────────────────>│                        │
-       │                       │                        │
-       │  Return cached data   │                        │
-       │  (fast, in-memory)    │                        │
-       │<──────────────────────┤                        │
-       │                       │                        │
-       │                       │                        │
-       │                       │  Webhook when edited   │
-       │                       │<───────────────────────┤
-       │                       │  (Apps Script)         │
-       │                       │                        │
-       │                       │  Fetch fresh data      │
-       │                       ├───────────────────────>│
-       │                       │                        │
-       │                       │  Return rows           │
-       │                       │<───────────────────────┤
-       │                       │                        │
-       │                       │  Update cache          │
-       │                       │  in memory             │
-       │                       │                        │
-       │  Next poll gets       │                        │
-       │  updated data         │                        │
-       ├──────────────────────>│                        │
-       │<──────────────────────┤                        │
-       │                       │                        │
-```
-
-## Files Created
-
-- `lib/sheetCache.js` - Shared cache module
-- `pages/api/sheet-webhook.js` - Webhook endpoint
-- `pages/api/sheet.js` - Updated to use cache
+- `google-apps-script.js` - Google Apps Script code (copy to your sheet)
+- `pages/api/sheet-webhook.js` - Webhook endpoint that receives data and broadcasts via Pusher
+- `pages/api/sheet.js` - Initial data fetch endpoint
+- `lib/useSheetData.js` - React hook that manages Pusher connection and data
+- `lib/googleSheets.js` - Google Sheets API utilities (for initial load)
 - `WEBHOOK_SETUP.md` - This guide
+- `PUSHER_SETUP.md` - Pusher configuration guide
 
 ## Next Steps
 
-After setup is working, consider:
-- Adding webhook delivery retry logic in Apps Script
-- Implementing cache warming on server startup
-- Adding metrics/monitoring for cache hit rates
-- Supporting multiple sheet ranges with separate caches
+After setup is working:
+- Monitor Pusher usage in dashboard
+- Add error handling/retry logic if needed
+- Consider adding authentication for production
+- Set up monitoring/alerts for webhook failures
