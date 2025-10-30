@@ -1,4 +1,5 @@
 import { useSheetData } from '../lib/useSheetData';
+import { formatIfNumericDK } from '../lib/tableUtils';
 
 export default function OverlayRiderRun() {
   const { allData, loading } = useSheetData(5000);
@@ -110,7 +111,7 @@ export default function OverlayRiderRun() {
               RUN 1
             </div>
             <div style={{ color: '#fff', fontSize: 32, fontWeight: 900, textShadow: '0 3px 6px rgba(0,0,0,0.8), 0 2px 4px rgba(0,0,0,0.6)' }}>
-              {riderInfo.run1}
+              {formatIfNumericDK(riderInfo.run1)}
             </div>
           </div>
 
@@ -130,7 +131,7 @@ export default function OverlayRiderRun() {
               RUN 2
             </div>
             <div style={{ color: '#fff', fontSize: 32, fontWeight: 900, textShadow: '0 3px 6px rgba(0,0,0,0.8), 0 2px 4px rgba(0,0,0,0.6)' }}>
-              {riderInfo.run2}
+              {formatIfNumericDK(riderInfo.run2)}
             </div>
           </div>
 
@@ -150,7 +151,7 @@ export default function OverlayRiderRun() {
               BEST RUN
             </div>
             <div style={{ color: '#fff', fontSize: 36, fontWeight: 900, textShadow: '0 4px 8px rgba(0,0,0,0.8), 0 2px 4px rgba(0,0,0,0.6)' }}>
-              {riderInfo.bestRun}
+              {formatIfNumericDK(riderInfo.bestRun)}
             </div>
           </div>
         </div>

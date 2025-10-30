@@ -14,8 +14,8 @@
 
 // IMPORTANT: Update these URLs with your server endpoints!
 const WEBHOOK_URLS = [
-  'https://xkr2cvs3-3000.euw.devtunnels.ms/api/sheet-webhook',  // Local dev (VS Code port forwarding)
-  'https://scoreboard-scoot-521863.vercel.app/api/sheet-webhook' // Production (Vercel)
+  'https://scoreboard-scoot-521863.vercel.app/api/sheet-webhook', // Production (Vercel)
+  'https://xkr2cvs3-3000.euw.devtunnels.ms/api/sheet-webhook'  // Local dev (VS Code port forwarding)
 ];
 
 /**
@@ -55,40 +55,53 @@ function getAllOutSheetsData() {
  * Sends webhook notifications with sheet data to all configured URLs
  */
 function sendWebhook(eventType, changeDetails) {
-  Logger.log('Fetching sheet data...');
+  var triggerAt = new Date();
+  Logger.log('Trigger at (triggerAt): ' + triggerAt.toISOString());
+  Logger.log('Collecting sheet data...');
+  var collectStart = new Date();
   const sheetData = getAllOutSheetsData();
+  var collectEnd = new Date();
+  Logger.log('Data collection duration ms: ' + (collectEnd - collectStart));
   
-  const payload = {
+  const basePayload = {
     event: eventType,
-    timestamp: new Date().toISOString(),
+    triggerAt: triggerAt.toISOString(), // when Apps Script started handling
+    collectedAt: collectEnd.toISOString(), // after gathering data
     changeDetails: changeDetails || {},
-    data: sheetData  // <<< ALL SHEET DATA INCLUDED HERE
+    data: sheetData
   };
   
-  const jsonPayload = JSON.stringify(payload);
-  Logger.log('Payload size: ' + jsonPayload.length + ' bytes');
+  const jsonBase = JSON.stringify(basePayload);
+  Logger.log('Base payload size bytes: ' + jsonBase.length);
   
-  const options = {
-    method: 'post',
-    contentType: 'application/json',
-    payload: jsonPayload,
-    muteHttpExceptions: true
-  };
-
-  // Send to all URLs
+  // Send to all URLs with per-URL timing
   WEBHOOK_URLS.forEach(function(url) {
+    var sendStart = new Date();
+    const payloadWithSend = Object.assign({}, basePayload, {
+      webhookSendStartAt: sendStart.toISOString()
+    });
+    const jsonPayload = JSON.stringify(payloadWithSend);
+    const options = {
+      method: 'post',
+      contentType: 'application/json',
+      payload: jsonPayload,
+      muteHttpExceptions: true
+    };
     try {
       Logger.log('Sending webhook to: ' + url);
       const response = UrlFetchApp.fetch(url, options);
       const responseCode = response.getResponseCode();
-      
+      const sendEnd = new Date();
+      Logger.log('Send completed at (webhookSentAt): ' + sendEnd.toISOString());
+      Logger.log('Send duration ms: ' + (sendEnd - sendStart));
       if (responseCode === 200) {
-        Logger.log('✓ Webhook sent successfully to: ' + url);
+        Logger.log('✓ Webhook success: ' + url);
       } else {
-        Logger.log('✗ Webhook failed for: ' + url + ' Status: ' + responseCode);
+        Logger.log('✗ Webhook non-200 (' + responseCode + '): ' + url);
       }
     } catch (error) {
-      Logger.log('✗ Error sending webhook to: ' + url + ' - ' + error.toString());
+      const sendFailAt = new Date();
+      Logger.log('✗ Error sending webhook to: ' + url + ' at ' + sendFailAt.toISOString() + ' - ' + error.toString());
     }
   });
 }

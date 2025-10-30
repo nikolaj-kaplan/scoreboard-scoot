@@ -4,17 +4,26 @@ This setup enables real-time updates from Google Sheets to your Next.js app usin
 
 ## Architecture
 
-- **Client (Browser)** → Fetches initial data from `/api/sheet`, then connects to Pusher for real-time updates
-- **Google Apps Script** → Fetches all "Out*" sheets data and sends to webhook when changes occur
-- **Webhook Handler** → Receives data and broadcasts to all connected clients via Pusher
-- **Pusher** → Delivers updates instantly to all connected browsers
+- **Client (Browser)** → Fetches initial data from `/api/sheet`, then connects to Pusher for real-time updates.
+- **In-Memory Cache (Server)** → Single object containing all "Out*" sheets. Served immediately on page load. Populated either by initial fetch or overwritten by webhook.
+- **Google Apps Script** → Fetches all "Out*" sheets data and sends to webhook when changes occur.
+- **Webhook Handler** → Receives data, updates cache, broadcasts to all connected clients via Pusher.
+- **Pusher** → Delivers updates instantly to all connected browsers.
 
 **Key Benefits:**
 - ✅ No polling needed
-- ✅ No cache complexity
+- ✅ Single consolidated dataset (all Out* sheets together)
+- ✅ Immediate page load if cache warm (no Google API call)
 - ✅ Instant updates (sub-second latency)
-- ✅ Works on Vercel serverless
-- ✅ Data included in webhook (no extra API calls)
+- ✅ Works on Vercel serverless (with caveat: cache is ephemeral)
+- ✅ Data included in webhook (no extra API calls for updates)
+
+**Cache Notes:**
+- The cache is a simple in-memory variable (see `lib/dataCache.js`).
+- It resets whenever the serverless function instance is recycled (common on Vercel after inactivity or scaling events).
+- On cold start, `/api/sheet` will fetch from Google, then populate the cache.
+- On webhook arrival, cache is replaced with the new dataset (source marked as `webhook`).
+- Responses from `/api/sheet` include whether they were a cache hit along with metadata.
 
 ## Setup Steps
 
@@ -180,16 +189,17 @@ When deploying to Vercel:
 
 **What happens when:**
 
-- **Page loads** → Fetches initial data from `/api/sheet` (Google Sheets API)
-- **Sheet edited** → Webhook pushes data → Pusher broadcasts → Instant UI update
-- **Connection drops** → Pusher auto-reconnects, page can manually refresh if needed
-- **Multiple clients** → All receive updates simultaneously via Pusher
+- **Page loads** → `/api/sheet` checks cache. If warm: returns immediately (cacheHit=true). If cold: fetches from Google Sheets, stores in cache, returns.
+- **Sheet edited** → Webhook pushes full dataset → Server updates cache → Broadcast via Pusher → Clients update.
+- **Connection drops** → Pusher auto-reconnects; manual refresh falls back to cached data (or triggers a fetch if cache cold).
+- **Multiple clients** → All receive updates simultaneously via Pusher; all see identical dataset.
 
 **Benefits of this architecture:**
 - ✅ No polling overhead
-- ✅ Minimal Google Sheets API usage (only on initial load)
-- ✅ Scales infinitely with Pusher (200k messages/day free)
-- ✅ Works perfectly on Vercel serverless
+- ✅ Reduced Google Sheets API usage (cache serves repeated page loads)
+- ✅ Fast initial render when cache warm
+- ✅ Scales with Pusher (200k messages/day free tier)
+- ✅ Works on Vercel serverless (cache is opportunistic)
 - ✅ Sub-second update latency
 
 **Benefits of this architecture:**
@@ -245,7 +255,7 @@ Both `/api/sheet` (initial load) and webhook push use **identical data structure
 - Data structure is identical from both sources
 - Client code doesn't need to know the source
 
-## Data Flow Diagram
+## Data Flow Diagram (with Cache)
 
 ```
 ┌─────────────┐         ┌──────────────┐         ┌─────────────┐
@@ -253,29 +263,35 @@ Both `/api/sheet` (initial load) and webhook push use **identical data structure
 │   Client    │         │  Serverless  │         │   Sheets    │
 └──────┬──────┘         └──────┬───────┘         └──────┬──────┘
        │                       │                        │
-       │ 1. Initial load       │                        │
-       │ GET /api/sheet        │                        │
+   │ 1a. Initial load      │                        │
+   │ GET /api/sheet        │                        │
+   ├──────────────────────>│                        │
+   │                       │ Check cache            │
+   │                       │  ├─ If warm: return    │
+   │                       │  └─ If cold: fetch     │
+   │                       ├───────────┬───────────>│
+   │                       │           │ Fetch      │
+   │                       │           │ Out* sheets│
+   │                       │           │<───────────┤
+   │                       │ Store in cache         │
+   │                       │ Return data            │
+   │                       │<───────────────────────┤
+   │ Initial / Cached data │                        │
+   │<──────────────────────┤                        │
+       │                       │                        │
+   │ 2. Connect Pusher     │                        │
        ├──────────────────────>│                        │
-       │                       │ Fetch "Out*" sheets    │
-       │                       ├───────────────────────>│
-       │                       │                        │
-       │                       │ Return data            │
-       │                       │<───────────────────────┤
-       │ Initial data          │                        │
-       │<──────────────────────┤                        │
-       │                       │                        │
-       │ 2. Connect Pusher     │                        │
-       ├──────────────────────>│                        │
        │                       │                        │
        │                       │                        │
-       │                       │ 3. Sheet edited        │
-       │                       │ Apps Script webhook    │
-       │                       │ (includes "Out*" data) │
-       │                       │<───────────────────────┤
+   │                       │ 3. Sheet edited        │
+   │                       │ Apps Script webhook    │
+   │                       │ (includes all Out* data)│
+   │                       │<───────────────────────┤
        │                       │                        │
-       │                       │ 4. Broadcast via       │
-       │ 5. Instant update!    │    Pusher              │
-       │<══════════════════════┤<──────────────────────┐│
+   │                       │ 4. Update cache        │
+   │                       │ 5. Broadcast via Pusher│
+   │ 6. Instant update!    │                        │
+   │<══════════════════════┤<──────────────────────┐│
        │ (all clients at once) │    Pusher Channels    ││
        │                       │                        ││
 ```
@@ -320,3 +336,46 @@ After setup is working:
 - Add error handling/retry logic if needed
 - Consider adding authentication for production
 - Set up monitoring/alerts for webhook failures
+- Evaluate persistent cache (Redis, Upstash, Vercel KV, Edge Config) if cold starts are frequent or consistency critical
+
+## Cache Implementation Details
+
+The cache is implemented in `lib/dataCache.js` as a module-scoped variable. Because Next.js API routes on Vercel run in serverless functions, this cache:
+
+- Is fast (memory access)
+- Is isolated per function instance
+- May be discarded at any time (scale down / cold start)
+- Is not shared across regions
+
+When strong consistency or cross-region replication is required, migrate to a managed store:
+
+- Redis / Upstash (low-latency global data)
+- Vercel KV / Edge Config
+- PlanetScale / Neon for relational needs
+
+### Response Metadata
+
+`/api/sheet` adds fields:
+
+```jsonc
+{
+   "cacheHit": true,          // was data served from cache?
+   "cacheUpdatedAt": "2025-10-30T12:34:56.000Z",
+   "cacheAgeMs": 1234,        // age of cached data
+   "cacheSource": "webhook"  // 'webhook' or 'fetch'
+}
+```
+
+Webhook broadcast payload includes `timeline.cacheUpdatedAt` and a `cache` object with `source` and `updatedAt`.
+
+### Invalidation Strategy
+
+- Full replacement on every webhook (simplest; atomic)
+- Could evolve to partial diffs if payload size or frequency grows
+
+### Edge Cases
+
+- Cold start: cache null → first client triggers Google fetch
+- Rapid edits: multiple webhook calls close together simply overwrite cache; last write wins
+- Large sheet growth: consider compressing payload (gzip at client) or selective sheet updates
+

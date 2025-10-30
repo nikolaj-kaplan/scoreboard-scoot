@@ -1,4 +1,5 @@
 import { useSheetData } from '../lib/useSheetData';
+import { formatIfNumericDK } from '../lib/tableUtils';
 
 export default function OverlayRaekkefoelge() {
   const { allData, loading } = useSheetData(5000);
@@ -210,7 +211,7 @@ export default function OverlayRaekkefoelge() {
                   boxShadow: 'inset 0 3px 0 rgba(255,255,255,0.12), inset 0 -4px 0 rgba(0,0,0,0.5), 0 3px 6px rgba(0,0,0,0.3)',
                   textShadow: '0 3px 6px rgba(0,0,0,0.8), 0 2px 4px rgba(0,0,0,0.6)'
                 }}>
-                  {row[1]}
+                  {formatIfNumericDK(row[1])}
                 </td>
                 <td style={{ 
                   background: 'linear-gradient(to bottom, #2a2a2a 0%, #1a1a1a 100%)',
@@ -222,7 +223,7 @@ export default function OverlayRaekkefoelge() {
                   boxShadow: 'inset 0 3px 0 rgba(255,255,255,0.12), inset 0 -4px 0 rgba(0,0,0,0.5), 0 3px 6px rgba(0,0,0,0.3)',
                   textShadow: '0 3px 6px rgba(0,0,0,0.8), 0 2px 4px rgba(0,0,0,0.6)'
                 }}>
-                  {row[2]}
+                  {formatIfNumericDK(row[2])}
                 </td>
                 <td style={{ 
                   background: 'linear-gradient(to bottom, #2a2a2a 0%, #1a1a1a 100%)',
@@ -234,7 +235,7 @@ export default function OverlayRaekkefoelge() {
                   boxShadow: 'inset 0 3px 0 rgba(255,255,255,0.12), inset 0 -4px 0 rgba(0,0,0,0.5), 0 3px 6px rgba(0,0,0,0.3)',
                   textShadow: '0 3px 6px rgba(0,0,0,0.8), 0 2px 4px rgba(0,0,0,0.6)'
                 }}>
-                  {row[3]}
+                  {formatIfNumericDK(row[3])}
                 </td>
               </tr>
             ))}
