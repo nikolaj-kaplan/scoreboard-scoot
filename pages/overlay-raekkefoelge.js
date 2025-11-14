@@ -1,5 +1,8 @@
 import { useSheetData } from '../lib/useSheetData';
 import { formatIfNumericDK } from '../lib/tableUtils';
+import ViewportClamp from '../lib/ViewportClamp';
+import { overlayTheme } from '../lib/overlayStyles';
+import { overlayConfig } from '../lib/overlayConfig';
 
 export default function OverlayRaekkefoelge() {
   const { allData, loading } = useSheetData(5000);
@@ -18,42 +21,34 @@ export default function OverlayRaekkefoelge() {
   const dataRows = rows.slice(4).map(row => row.slice(0, 6)).filter(row => row[1]);
 
   return (
-    <div style={{ 
-      minHeight: '100vh', 
-      background: '#000',
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      padding: '60px 80px',
-      fontFamily: 'Arial, sans-serif'
-    }}>
-      <div style={{ width: '100%', maxWidth: 1760 }}>
+    <ViewportClamp fixedTop={120} earlyThreshold={12} designWidth={1920} designHeight={1080} contentWidth="design">
+      <div style={{ position: 'relative', width: '100%', maxWidth: overlayTheme.container.maxWidth, margin: overlayTheme.container.margin, fontFamily: 'Arial, sans-serif', backgroundColor: overlayConfig.backgroundColor, minHeight: '100vh' }}>
         {/* Header with skewed blue bar */}
-        <div style={{ position: 'relative', marginBottom: 40 }}>
+  <div style={{ position: 'relative', marginBottom: 18 }}>
           <div style={{
             display: 'flex',
             alignItems: 'stretch',
-            height: 140
+            height: overlayTheme.header.height
           }}>
             {/* Left dark section */}
             <div style={{
               background: 'linear-gradient(to bottom, #2a2a2a 0%, #1a1a1a 100%)',
-              padding: '30px 60px',
+              padding: overlayTheme.header.darkPadding,
               display: 'flex',
               flexDirection: 'column',
               justifyContent: 'center',
               transform: 'skewX(-10deg)',
               marginRight: -20,
-              minWidth: 380,
+              minWidth: overlayTheme.header.darkMinWidth,
               boxShadow: 'inset 0 4px 0 rgba(255,255,255,0.2), inset 0 -6px 0 rgba(0,0,0,0.6), 0 8px 16px rgba(0,0,0,0.5), 0 4px 8px rgba(0,0,0,0.4)'
             }}>
               <div style={{ transform: 'skewX(10deg)' }}>
                 <div style={{ 
-                  fontSize: 52, 
+                  fontSize: overlayTheme.fonts.title, 
                   fontWeight: 900, 
                   color: '#fff',
                   letterSpacing: 3,
-                  lineHeight: 1.1,
+                  lineHeight: 1.05,
                   textShadow: '0 6px 12px rgba(0,0,0,0.8), 0 3px 6px rgba(0,0,0,0.6), 2px 2px 0 rgba(0,0,0,0.5), 4px 4px 0 rgba(0,0,0,0.3)'
                 }}>
                   {title}
@@ -64,7 +59,7 @@ export default function OverlayRaekkefoelge() {
             {/* Blue section */}
             <div style={{
               background: 'linear-gradient(to bottom, #1e40af 0%, #1e3a8a 100%)',
-              padding: '30px 60px',
+              padding: overlayTheme.header.bluePadding,
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'flex-start',
@@ -74,7 +69,7 @@ export default function OverlayRaekkefoelge() {
             }}>
               <div style={{ transform: 'skewX(10deg)' }}>
                 <div style={{ 
-                  fontSize: 58, 
+                  fontSize: overlayTheme.fonts.subtitle, 
                   fontWeight: 900, 
                   color: '#fff',
                   letterSpacing: 4,
@@ -90,12 +85,12 @@ export default function OverlayRaekkefoelge() {
           {/* Subtitle bar */}
           <div style={{
             background: 'linear-gradient(90deg, #1e40af 0%, transparent 100%)',
-            padding: '12px 40px',
-            marginTop: 8,
+            padding: '10px 36px',
+            marginTop: 6,
             boxShadow: 'inset 0 3px 0 rgba(255,255,255,0.25), inset 0 -3px 0 rgba(0,0,0,0.5), 0 4px 8px rgba(0,0,0,0.4)'
           }}>
             <div style={{ 
-              fontSize: 24, 
+              fontSize: 26, 
               fontWeight: 700, 
               color: '#fff',
               letterSpacing: 3,
@@ -106,44 +101,44 @@ export default function OverlayRaekkefoelge() {
             </div>
           </div>
 
-          {/* Branding */}
+          {/* External branding overlay */}
           <div style={{
             position: 'absolute',
-            top: -80,
+            top: 26,
             right: 0,
-            textAlign: 'right'
+            width: 660,
+            pointerEvents: 'none',
+            textAlign: 'right',
+            zIndex: 40
           }}>
-            <div style={{ 
-              fontSize: 96, 
-              fontWeight: 900, 
+            <div style={{
+              fontSize: 138,
+              fontWeight: 900,
               background: 'linear-gradient(135deg, #FFD700 0%, #FFA500 50%, #FF8C00 100%)',
               WebkitBackgroundClip: 'text',
               WebkitTextFillColor: 'transparent',
               backgroundClip: 'text',
               fontFamily: 'Brush Script MT, cursive',
               fontStyle: 'italic',
-              marginBottom: 12,
-              filter: 'drop-shadow(0 8px 16px rgba(0,0,0,0.8)) drop-shadow(0 4px 8px rgba(0,0,0,0.6)) drop-shadow(3px 3px 0 rgba(255,215,0,0.4)) drop-shadow(6px 6px 0 rgba(0,0,0,0.4))'
-            }}>
-              Mills Club
-            </div>
-            <div style={{ 
-              fontSize: 26, 
-              fontWeight: 900, 
-              background: 'linear-gradient(135deg, #1e40af 0%, #3b82f6 50%, #60a5fa 100%)',
-              padding: '8px 20px',
-              color: '#fff',
-              letterSpacing: 4,
-              textTransform: 'uppercase',
+              lineHeight: 0.7,
+              transform: 'translateY(-55%)',
+              filter: 'drop-shadow(0 16px 26px rgba(0,0,0,0.95)) drop-shadow(0 8px 14px rgba(0,0,0,0.7)) drop-shadow(3px 3px 0 rgba(255,215,0,0.55))'
+            }}>Mills Club</div>
+            <div style={{
+              marginTop: -26,
               display: 'inline-block',
-              transform: 'skewX(-5deg)',
-              boxShadow: '0 6px 12px rgba(0,0,0,0.6), 0 3px 6px rgba(0,0,0,0.4), inset 0 2px 0 rgba(255,255,255,0.3), inset 0 -2px 0 rgba(0,0,0,0.4)',
-              textShadow: '0 3px 6px rgba(0,0,0,0.8), 0 2px 4px rgba(0,0,0,0.6), 1px 1px 0 rgba(0,0,0,0.5)',
-              border: '2px solid rgba(255,255,255,0.2)'
+              transform: 'skewX(-6deg)',
+              background: 'linear-gradient(135deg, #1e40af 0%, #2f5fc4 55%, #3f7fdc 100%)',
+              padding: '8px 40px 10px 46px',
+              border: '2px solid rgba(255,255,255,0.45)',
+              boxShadow: '0 12px 24px rgba(0,0,0,0.8), 0 5px 12px rgba(0,0,0,0.6), inset 0 2px 0 rgba(255,255,255,0.55), inset 0 -2px 0 rgba(0,0,0,0.65)',
+              textShadow: '0 5px 10px rgba(0,0,0,0.9), 1px 1px 0 rgba(0,0,0,0.7)',
+              fontSize: 30,
+              fontWeight: 900,
+              letterSpacing: 5,
+              color: '#fff'
             }}>
-              <span style={{ display: 'inline-block', transform: 'skewX(5deg)' }}>
-                Sjællandsmesterskaberne
-              </span>
+              <span style={{ display: 'inline-block', transform: 'skewX(6deg)', position: 'relative', top: 2 }}>SJÆLLANDSMESTERSKABERNE</span>
             </div>
           </div>
         </div>
@@ -152,16 +147,17 @@ export default function OverlayRaekkefoelge() {
         <table style={{ 
           width: '100%',
           borderCollapse: 'separate',
-          borderSpacing: '0 4px'
+          borderSpacing: '0 4px',
+          marginTop: 8
         }}>
           <thead>
             <tr>
               <th style={{ 
                 background: 'linear-gradient(to bottom, #1e40af 0%, #1e3a8a 100%)',
                 color: '#fff',
-                padding: '20px 30px',
+                padding: overlayTheme.table.headerPadding.name,
                 textAlign: 'left',
-                fontSize: 20,
+                fontSize: overlayTheme.fonts.headerCell,
                 fontWeight: 700,
                 textTransform: 'uppercase',
                 boxShadow: 'inset 0 4px 0 rgba(255,255,255,0.3), inset 0 -5px 0 rgba(0,0,0,0.6), 0 4px 8px rgba(0,0,0,0.4)',
@@ -172,12 +168,11 @@ export default function OverlayRaekkefoelge() {
               <th style={{ 
                 background: 'linear-gradient(to bottom, #1e40af 0%, #1e3a8a 100%)',
                 color: '#fff',
-                padding: '20px 25px',
+                padding: overlayTheme.table.headerPadding.run,
                 textAlign: 'center',
-                fontSize: 20,
+                fontSize: overlayTheme.fonts.headerCell,
                 fontWeight: 700,
                 textTransform: 'uppercase',
-                width: 140,
                 boxShadow: 'inset 0 4px 0 rgba(255,255,255,0.3), inset 0 -5px 0 rgba(0,0,0,0.6), 0 4px 8px rgba(0,0,0,0.4)',
                 textShadow: '0 3px 6px rgba(0,0,0,0.8), 0 2px 4px rgba(0,0,0,0.6)'
               }}>
@@ -186,12 +181,11 @@ export default function OverlayRaekkefoelge() {
               <th style={{ 
                 background: 'linear-gradient(to bottom, #1e40af 0%, #1e3a8a 100%)',
                 color: '#fff',
-                padding: '20px 25px',
+                padding: overlayTheme.table.headerPadding.run,
                 textAlign: 'center',
-                fontSize: 20,
+                fontSize: overlayTheme.fonts.headerCell,
                 fontWeight: 700,
                 textTransform: 'uppercase',
-                width: 140,
                 boxShadow: 'inset 0 4px 0 rgba(255,255,255,0.3), inset 0 -5px 0 rgba(0,0,0,0.6), 0 4px 8px rgba(0,0,0,0.4)',
                 textShadow: '0 3px 6px rgba(0,0,0,0.8), 0 2px 4px rgba(0,0,0,0.6)'
               }}>
@@ -203,21 +197,21 @@ export default function OverlayRaekkefoelge() {
             {dataRows.map((row, i) => (
               <tr key={i}>
                 <td style={{ 
-                  background: 'linear-gradient(to bottom, #2a2a2a 0%, #1a1a1a 100%)',
+                  background: 'linear-gradient(to bottom, #1e40af 0%, #1e3a8a 100%)',
                   color: '#fff',
-                  padding: '24px 30px',
-                  fontSize: 26,
+                  padding: overlayTheme.table.cellPadding.rank,
+                  fontSize: overlayTheme.fonts.rank,
                   fontWeight: 700,
-                  boxShadow: 'inset 0 3px 0 rgba(255,255,255,0.12), inset 0 -4px 0 rgba(0,0,0,0.5), 0 3px 6px rgba(0,0,0,0.3)',
-                  textShadow: '0 3px 6px rgba(0,0,0,0.8), 0 2px 4px rgba(0,0,0,0.6)'
+                  boxShadow: 'inset 0 3px 0 rgba(255,255,255,0.25), inset 0 -4px 0 rgba(0,0,0,0.5), 0 3px 6px rgba(0,0,0,0.4)',
+                  textShadow: '0 3px 6px rgba(0,0,0,0.85), 0 2px 4px rgba(0,0,0,0.65)'
                 }}>
                   {formatIfNumericDK(row[1])}
                 </td>
                 <td style={{ 
                   background: 'linear-gradient(to bottom, #2a2a2a 0%, #1a1a1a 100%)',
                   color: '#fff',
-                  padding: '24px 25px',
-                  fontSize: 26,
+                  padding: overlayTheme.table.cellPadding.run,
+                  fontSize: overlayTheme.fonts.run,
                   fontWeight: 600,
                   textAlign: 'center',
                   boxShadow: 'inset 0 3px 0 rgba(255,255,255,0.12), inset 0 -4px 0 rgba(0,0,0,0.5), 0 3px 6px rgba(0,0,0,0.3)',
@@ -228,8 +222,8 @@ export default function OverlayRaekkefoelge() {
                 <td style={{ 
                   background: 'linear-gradient(to bottom, #2a2a2a 0%, #1a1a1a 100%)',
                   color: '#fff',
-                  padding: '24px 25px',
-                  fontSize: 26,
+                  padding: overlayTheme.table.cellPadding.run,
+                  fontSize: overlayTheme.fonts.run,
                   fontWeight: 600,
                   textAlign: 'center',
                   boxShadow: 'inset 0 3px 0 rgba(255,255,255,0.12), inset 0 -4px 0 rgba(0,0,0,0.5), 0 3px 6px rgba(0,0,0,0.3)',
@@ -242,6 +236,6 @@ export default function OverlayRaekkefoelge() {
           </tbody>
         </table>
       </div>
-    </div>
+    </ViewportClamp>
   );
 }

@@ -1,5 +1,8 @@
 import { useSheetData } from '../lib/useSheetData';
 import { formatIfNumericDK } from '../lib/tableUtils';
+import ViewportClamp from '../lib/ViewportClamp';
+import { overlayTheme } from '../lib/overlayStyles';
+import { overlayConfig } from '../lib/overlayConfig';
 
 export default function OverlayStillingHeat() {
   const { allData, loading } = useSheetData(5000);
@@ -18,27 +21,19 @@ export default function OverlayStillingHeat() {
   const dataRows = rows.slice(4).map(row => row.slice(7, 14)).filter(row => row[1]);
 
   return (
-    <div style={{ 
-      minHeight: '100vh', 
-      background: '#000',
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      padding: '60px 80px',
-      fontFamily: 'Arial, sans-serif'
-    }}>
-      <div style={{ width: '100%', maxWidth: 1760 }}>
+    <ViewportClamp fixedTop={120} earlyThreshold={12} designWidth={1920} designHeight={1080} contentWidth="design">
+      <div style={{ position: 'relative', width: '100%', maxWidth: overlayTheme.container.maxWidth, margin: overlayTheme.container.margin, backgroundColor: overlayConfig.backgroundColor, minHeight: '100vh' }}>
         {/* Header with skewed blue bar */}
-        <div style={{ position: 'relative', marginBottom: 40 }}>
+  <div style={{ position: 'relative', marginTop: 0, marginBottom: 10 }}>
           <div style={{
             display: 'flex',
             alignItems: 'stretch',
-            height: 140
+            height: overlayTheme.header.height
           }}>
             {/* Left dark section */}
             <div style={{
               background: 'linear-gradient(to bottom, #2a2a2a 0%, #1a1a1a 100%)',
-              padding: '30px 60px',
+              padding: overlayTheme.header.darkPadding,
               display: 'flex',
               flexDirection: 'column',
               justifyContent: 'center',
@@ -49,7 +44,7 @@ export default function OverlayStillingHeat() {
             }}>
               <div style={{ transform: 'skewX(10deg)' }}>
                 <div style={{ 
-                  fontSize: 52, 
+                  fontSize: overlayTheme.fonts.title, 
                   fontWeight: 900, 
                   color: '#fff',
                   letterSpacing: 3,
@@ -64,7 +59,7 @@ export default function OverlayStillingHeat() {
             {/* Blue section */}
             <div style={{
               background: 'linear-gradient(to bottom, #1e40af 0%, #1e3a8a 100%)',
-              padding: '30px 60px',
+              padding: overlayTheme.header.bluePadding,
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'flex-start',
@@ -74,7 +69,7 @@ export default function OverlayStillingHeat() {
             }}>
               <div style={{ transform: 'skewX(10deg)' }}>
                 <div style={{ 
-                  fontSize: 58, 
+                  fontSize: overlayTheme.fonts.subtitle, 
                   fontWeight: 900, 
                   color: '#fff',
                   letterSpacing: 4,
@@ -90,12 +85,12 @@ export default function OverlayStillingHeat() {
           {/* Subtitle bar */}
           <div style={{
             background: 'linear-gradient(90deg, #1e40af 0%, transparent 100%)',
-            padding: '12px 40px',
+            padding: '10px 36px',
             marginTop: 8,
             boxShadow: 'inset 0 3px 0 rgba(255,255,255,0.25), inset 0 -3px 0 rgba(0,0,0,0.5), 0 4px 8px rgba(0,0,0,0.4)'
           }}>
             <div style={{ 
-              fontSize: 24, 
+              fontSize: 26, 
               fontWeight: 700, 
               color: '#fff',
               letterSpacing: 3,
@@ -106,45 +101,46 @@ export default function OverlayStillingHeat() {
             </div>
           </div>
 
-          {/* Branding */}
+        </div>
+
+        {/* External branding overlay */}
+        <div style={{
+          position: 'absolute',
+          top: 26,
+          right: 0,
+          width: 660,
+          pointerEvents: 'none',
+          textAlign: 'right',
+          zIndex: 40
+        }}>
           <div style={{
-            position: 'absolute',
-            top: -80,
-            right: 0,
-            textAlign: 'right'
+            fontSize: 138,
+            fontWeight: 900,
+            background: 'linear-gradient(135deg, #FFD700 0%, #FFA500 50%, #FF8C00 100%)',
+            WebkitBackgroundClip: 'text',
+            WebkitTextFillColor: 'transparent',
+            backgroundClip: 'text',
+            fontFamily: 'Brush Script MT, cursive',
+            fontStyle: 'italic',
+            lineHeight: 0.7,
+            transform: 'translateY(-55%)',
+            filter: 'drop-shadow(0 16px 26px rgba(0,0,0,0.95)) drop-shadow(0 8px 14px rgba(0,0,0,0.7)) drop-shadow(3px 3px 0 rgba(255,215,0,0.55))'
+          }}>Mills Club</div>
+          <div style={{
+            marginTop: -26,
+            display: 'inline-block',
+            transform: 'skewX(-6deg)',
+            background: 'linear-gradient(135deg, #1e40af 0%, #2f5fc4 55%, #3f7fdc 100%)',
+            padding: '8px 40px 10px 46px',
+            border: '2px solid rgba(255,255,255,0.45)',
+            boxShadow: '0 12px 24px rgba(0,0,0,0.8), 0 5px 12px rgba(0,0,0,0.6), inset 0 2px 0 rgba(255,255,255,0.55), inset 0 -2px 0 rgba(0,0,0,0.65)',
+            textShadow: '0 5px 10px rgba(0,0,0,0.9), 1px 1px 0 rgba(0,0,0,0.7)',
+            fontSize: 30,
+            fontWeight: 900,
+            letterSpacing: 5,
+            color: '#fff'
           }}>
-            <div style={{ 
-              fontSize: 96, 
-              fontWeight: 900, 
-              background: 'linear-gradient(135deg, #FFD700 0%, #FFA500 50%, #FF8C00 100%)',
-              WebkitBackgroundClip: 'text',
-              WebkitTextFillColor: 'transparent',
-              backgroundClip: 'text',
-              fontFamily: 'Brush Script MT, cursive',
-              fontStyle: 'italic',
-              marginBottom: 12,
-              filter: 'drop-shadow(0 8px 16px rgba(0,0,0,0.8)) drop-shadow(0 4px 8px rgba(0,0,0,0.6)) drop-shadow(3px 3px 0 rgba(255,215,0,0.4)) drop-shadow(6px 6px 0 rgba(0,0,0,0.4))'
-            }}>
-              Mills Club
-            </div>
-            <div style={{ 
-              fontSize: 26, 
-              fontWeight: 900, 
-              background: 'linear-gradient(135deg, #1e40af 0%, #3b82f6 50%, #60a5fa 100%)',
-              padding: '8px 20px',
-              color: '#fff',
-              letterSpacing: 4,
-              textTransform: 'uppercase',
-              display: 'inline-block',
-              transform: 'skewX(-5deg)',
-              boxShadow: '0 6px 12px rgba(0,0,0,0.6), 0 3px 6px rgba(0,0,0,0.4), inset 0 2px 0 rgba(255,255,255,0.3), inset 0 -2px 0 rgba(0,0,0,0.4)',
-              textShadow: '0 3px 6px rgba(0,0,0,0.8), 0 2px 4px rgba(0,0,0,0.6), 1px 1px 0 rgba(0,0,0,0.5)',
-              border: '2px solid rgba(255,255,255,0.2)'
-            }}>
-              <span style={{ display: 'inline-block', transform: 'skewX(5deg)' }}>
-                Sjællandsmesterskaberne
-              </span>
-            </div>
+            <span style={{ display: 'inline-block', transform: 'skewX(6deg)', position: 'relative', top: 2 }}>SJÆLLANDSMESTERSKABERNE</span>
           </div>
         </div>
 
@@ -152,19 +148,20 @@ export default function OverlayStillingHeat() {
         <table style={{ 
           width: '100%',
           borderCollapse: 'separate',
-          borderSpacing: '0 4px'
+          borderSpacing: '0 4px',
+          marginTop: 14
         }}>
           <thead>
             <tr>
               <th style={{ 
                 background: 'linear-gradient(to bottom, #1e40af 0%, #1e3a8a 100%)',
                 color: '#fff',
-                padding: '20px 20px',
+                padding: overlayTheme.table.headerPadding.hash,
                 textAlign: 'center',
-                fontSize: 20,
+                fontSize: overlayTheme.fonts.headerCell,
                 fontWeight: 700,
                 textTransform: 'uppercase',
-                width: 80,
+                // width removed to allow fluid expansion
                 boxShadow: 'inset 0 4px 0 rgba(255,255,255,0.3), inset 0 -5px 0 rgba(0,0,0,0.6), 0 4px 8px rgba(0,0,0,0.4)',
                 textShadow: '0 3px 6px rgba(0,0,0,0.8), 0 2px 4px rgba(0,0,0,0.6)'
               }}>
@@ -173,9 +170,9 @@ export default function OverlayStillingHeat() {
               <th style={{ 
                 background: 'linear-gradient(to bottom, #1e40af 0%, #1e3a8a 100%)',
                 color: '#fff',
-                padding: '20px 30px',
+                padding: overlayTheme.table.headerPadding.name,
                 textAlign: 'left',
-                fontSize: 20,
+                fontSize: overlayTheme.fonts.headerCell,
                 fontWeight: 700,
                 textTransform: 'uppercase',
                 boxShadow: 'inset 0 4px 0 rgba(255,255,255,0.3), inset 0 -5px 0 rgba(0,0,0,0.6), 0 4px 8px rgba(0,0,0,0.4)',
@@ -186,12 +183,12 @@ export default function OverlayStillingHeat() {
               <th style={{ 
                 background: 'linear-gradient(to bottom, #1e40af 0%, #1e3a8a 100%)',
                 color: '#fff',
-                padding: '20px 25px',
+                padding: overlayTheme.table.headerPadding.run,
                 textAlign: 'center',
-                fontSize: 20,
+                fontSize: overlayTheme.fonts.headerCell,
                 fontWeight: 700,
                 textTransform: 'uppercase',
-                width: 140,
+                // width removed
                 boxShadow: 'inset 0 4px 0 rgba(255,255,255,0.3), inset 0 -5px 0 rgba(0,0,0,0.6), 0 4px 8px rgba(0,0,0,0.4)',
                 textShadow: '0 3px 6px rgba(0,0,0,0.8), 0 2px 4px rgba(0,0,0,0.6)'
               }}>
@@ -200,12 +197,12 @@ export default function OverlayStillingHeat() {
               <th style={{ 
                 background: 'linear-gradient(to bottom, #1e40af 0%, #1e3a8a 100%)',
                 color: '#fff',
-                padding: '20px 25px',
+                padding: overlayTheme.table.headerPadding.run,
                 textAlign: 'center',
-                fontSize: 20,
+                fontSize: overlayTheme.fonts.headerCell,
                 fontWeight: 700,
                 textTransform: 'uppercase',
-                width: 140,
+                // width removed
                 boxShadow: 'inset 0 4px 0 rgba(255,255,255,0.3), inset 0 -5px 0 rgba(0,0,0,0.6), 0 4px 8px rgba(0,0,0,0.4)',
                 textShadow: '0 3px 6px rgba(0,0,0,0.8), 0 2px 4px rgba(0,0,0,0.6)'
               }}>
@@ -214,12 +211,12 @@ export default function OverlayStillingHeat() {
               <th style={{ 
                 background: 'linear-gradient(to bottom, #1e40af 0%, #1e3a8a 100%)',
                 color: '#fff',
-                padding: '20px 30px',
+                padding: overlayTheme.table.headerPadding.best,
                 textAlign: 'center',
-                fontSize: 20,
+                fontSize: overlayTheme.fonts.headerCell,
                 fontWeight: 700,
                 textTransform: 'uppercase',
-                width: 160,
+                // width removed
                 boxShadow: 'inset 0 4px 0 rgba(255,255,255,0.3), inset 0 -5px 0 rgba(0,0,0,0.6), 0 4px 8px rgba(0,0,0,0.4)',
                 textShadow: '0 3px 6px rgba(0,0,0,0.8), 0 2px 4px rgba(0,0,0,0.6)'
               }}>
@@ -231,24 +228,22 @@ export default function OverlayStillingHeat() {
             {dataRows.map((row, i) => (
               <tr key={i}>
                 <td style={{ 
-                  background: i < 3 ? 'linear-gradient(to bottom, #1e40af 0%, #1e3a8a 100%)' : 'linear-gradient(to bottom, #2a2a2a 0%, #1a1a1a 100%)',
+                  background: 'linear-gradient(to bottom, #1e40af 0%, #1e3a8a 100%)',
                   color: '#fff',
-                  padding: '24px 20px',
-                  fontSize: 32,
+                  padding: overlayTheme.table.cellPadding.rank,
+                  fontSize: overlayTheme.fonts.rank,
                   fontWeight: 900,
                   textAlign: 'center',
-                  boxShadow: i < 3 
-                    ? 'inset 0 4px 0 rgba(255,255,255,0.3), inset 0 -5px 0 rgba(0,0,0,0.6), 0 4px 8px rgba(0,0,0,0.3)' 
-                    : 'inset 0 3px 0 rgba(255,255,255,0.12), inset 0 -4px 0 rgba(0,0,0,0.5), 0 3px 6px rgba(0,0,0,0.3)',
+                  boxShadow: 'inset 0 4px 0 rgba(255,255,255,0.3), inset 0 -5px 0 rgba(0,0,0,0.6), 0 4px 8px rgba(0,0,0,0.3)',
                   textShadow: '0 4px 8px rgba(0,0,0,0.8), 0 2px 4px rgba(0,0,0,0.6), 2px 2px 0 rgba(0,0,0,0.5)'
                 }}>
-                  {formatIfNumericDK(row[0])}
+                  {(() => { const v = row[0]; const n = parseInt(typeof v === 'string' ? v.replace(/[,\.].*$/, '') : v, 10); return isNaN(n) ? v : n; })()}
                 </td>
                 <td style={{ 
                   background: 'linear-gradient(to bottom, #2a2a2a 0%, #1a1a1a 100%)',
                   color: '#fff',
-                  padding: '24px 30px',
-                  fontSize: 26,
+                  padding: overlayTheme.table.cellPadding.name,
+                  fontSize: overlayTheme.fonts.name,
                   fontWeight: 700,
                   boxShadow: 'inset 0 3px 0 rgba(255,255,255,0.12), inset 0 -4px 0 rgba(0,0,0,0.5), 0 3px 6px rgba(0,0,0,0.3)',
                   textShadow: '0 3px 6px rgba(0,0,0,0.8), 0 2px 4px rgba(0,0,0,0.6)'
@@ -258,8 +253,8 @@ export default function OverlayStillingHeat() {
                 <td style={{ 
                   background: 'linear-gradient(to bottom, #2a2a2a 0%, #1a1a1a 100%)',
                   color: '#fff',
-                  padding: '24px 25px',
-                  fontSize: 26,
+                  padding: overlayTheme.table.cellPadding.run,
+                  fontSize: overlayTheme.fonts.run,
                   fontWeight: 600,
                   textAlign: 'center',
                   boxShadow: 'inset 0 3px 0 rgba(255,255,255,0.12), inset 0 -4px 0 rgba(0,0,0,0.5), 0 3px 6px rgba(0,0,0,0.3)',
@@ -270,8 +265,8 @@ export default function OverlayStillingHeat() {
                 <td style={{ 
                   background: 'linear-gradient(to bottom, #2a2a2a 0%, #1a1a1a 100%)',
                   color: '#fff',
-                  padding: '24px 25px',
-                  fontSize: 26,
+                  padding: overlayTheme.table.cellPadding.run,
+                  fontSize: overlayTheme.fonts.run,
                   fontWeight: 600,
                   textAlign: 'center',
                   boxShadow: 'inset 0 3px 0 rgba(255,255,255,0.12), inset 0 -4px 0 rgba(0,0,0,0.5), 0 3px 6px rgba(0,0,0,0.3)',
@@ -282,8 +277,8 @@ export default function OverlayStillingHeat() {
                 <td style={{ 
                   background: 'linear-gradient(to bottom, #2a2a2a 0%, #1a1a1a 100%)',
                   color: '#fff',
-                  padding: '24px 30px',
-                  fontSize: 30,
+                  padding: overlayTheme.table.cellPadding.best,
+                  fontSize: overlayTheme.fonts.best,
                   fontWeight: 900,
                   textAlign: 'center',
                   boxShadow: 'inset 0 3px 0 rgba(255,255,255,0.12), inset 0 -4px 0 rgba(0,0,0,0.5), 0 3px 6px rgba(0,0,0,0.3)',
@@ -296,6 +291,6 @@ export default function OverlayStillingHeat() {
           </tbody>
         </table>
       </div>
-    </div>
+    </ViewportClamp>
   );
 }

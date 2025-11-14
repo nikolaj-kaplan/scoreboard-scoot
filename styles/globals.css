@@ -13,4 +13,8 @@ html, body {
 
 body {
   background: #000;
+  font-family: 'Segoe UI', Arial, Helvetica, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
 }
