@@ -2,12 +2,29 @@ import { useSheetData } from '../lib/useSheetData';
 import ViewportClamp from '../lib/ViewportClamp';
 import { formatIfNumericDK } from '../lib/tableUtils';
 import { overlayConfig } from '../lib/overlayConfig';
+import LoadingSpinner from '../lib/LoadingSpinner';
+import { useState } from 'react';
 
 export default function OverlayRiderPresentation() {
-  const { allData, loading } = useSheetData(5000);
+  const { allData, loading, refresh, dataUpdated } = useSheetData(5000);
+  const [isRefreshing, setIsRefreshing] = useState(false);
 
-  if (loading || !allData) {
-    return null;
+  const handleLogoClick = async () => {
+    setIsRefreshing(true);
+    try {
+      // Clear cache on server
+      await fetch('/api/clear-cache', { method: 'POST' });
+      // Refresh data
+      await refresh();
+    } catch (error) {
+      console.error('Error clearing cache:', error);
+    } finally {
+      setIsRefreshing(false);
+    }
+  };
+
+  if (loading || isRefreshing || !allData) {
+    return <LoadingSpinner />;
   }
 
   const rows = allData['Out2_ActiveRider'] || [];
@@ -40,11 +57,14 @@ export default function OverlayRiderPresentation() {
           top: 26,
           right: 0,
           width: 660,
-          pointerEvents: 'none',
+          pointerEvents: 'auto',
           textAlign: 'right',
-          zIndex: 40
-        }}>
-          <div style={{
+          zIndex: 40,
+          cursor: 'pointer'
+        }}
+        onClick={handleLogoClick}
+        title="Click to refresh data">
+          <div className={dataUpdated ? 'logo-glow' : ''} style={{
             fontSize: 138,
             fontWeight: 900,
             background: 'linear-gradient(135deg, #FFD700 0%, #FFA500 50%, #FF8C00 100%)',
@@ -57,6 +77,19 @@ export default function OverlayRiderPresentation() {
             transform: 'translateY(-55%)',
             filter: 'drop-shadow(0 16px 26px rgba(0,0,0,0.95)) drop-shadow(0 8px 14px rgba(0,0,0,0.7)) drop-shadow(3px 3px 0 rgba(255,215,0,0.55))'
           }}>Mills Club</div>
+          <style jsx>{`
+            .logo-glow {
+              animation: glow-pulse 0.8s ease-in-out;
+            }
+            @keyframes glow-pulse {
+              0%, 100% {
+                filter: drop-shadow(0 16px 26px rgba(0,0,0,0.95)) drop-shadow(0 8px 14px rgba(0,0,0,0.7)) drop-shadow(3px 3px 0 rgba(255,215,0,0.55));
+              }
+              50% {
+                filter: drop-shadow(0 0 30px rgba(255,215,0,1)) drop-shadow(0 0 60px rgba(255,165,0,0.8)) drop-shadow(0 0 90px rgba(255,140,0,0.6)) drop-shadow(3px 3px 0 rgba(255,215,0,0.55));
+              }
+            }
+          `}</style>
           <div style={{
             marginTop: -26,
             display: 'inline-block',
@@ -181,7 +214,7 @@ export default function OverlayRiderPresentation() {
                 boxShadow: 'inset 0 3px 0 rgba(255,255,255,0.12), inset 0 -4px 0 rgba(0,0,0,0.5), 0 3px 6px rgba(0,0,0,0.3)'
               }}>
                 <div style={{ color: '#888', fontSize: 16, marginBottom: 8, textTransform: 'uppercase', letterSpacing: 2, fontWeight: 700 }}>
-                  Sponsor
+                  Best trick/Sponsor
                 </div>
                 <div style={{ color: '#fff', fontSize: 28, fontWeight: 700, textShadow: '0 3px 6px rgba(0,0,0,0.8)' }}>
                   {riderData.Sponsor}

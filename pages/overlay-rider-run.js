@@ -2,12 +2,27 @@ import { useSheetData } from '../lib/useSheetData';
 import { formatIfNumericDK } from '../lib/tableUtils';
 import { overlayTheme } from '../lib/overlayStyles';
 import { overlayConfig } from '../lib/overlayConfig';
+import LoadingSpinner from '../lib/LoadingSpinner';
+import { useState } from 'react';
 
 export default function OverlayRiderRun() {
-  const { allData, loading } = useSheetData(5000);
+  const { allData, loading, refresh, dataUpdated } = useSheetData(5000);
+  const [isRefreshing, setIsRefreshing] = useState(false);
 
-  if (loading || !allData) {
-    return null;
+  const handleLogoClick = async () => {
+    setIsRefreshing(true);
+    try {
+      await fetch('/api/clear-cache', { method: 'POST' });
+      await refresh();
+    } catch (error) {
+      console.error('Error clearing cache:', error);
+    } finally {
+      setIsRefreshing(false);
+    }
+  };
+
+  if (loading || isRefreshing || !allData) {
+    return <LoadingSpinner />;
   }
 
   const rows = allData['Out2_ActiveRider'] || [];
@@ -55,10 +70,13 @@ export default function OverlayRiderRun() {
             transform: 'skewX(-10deg)',
             marginRight: -20,
             minWidth: 460,
-            boxShadow: 'inset 0 4px 0 rgba(255,255,255,0.3), inset 0 -5px 0 rgba(0,0,0,0.6), 0 4px 8px rgba(0,0,0,0.4)'
-          }}>
+            boxShadow: 'inset 0 4px 0 rgba(255,255,255,0.3), inset 0 -5px 0 rgba(0,0,0,0.6), 0 4px 8px rgba(0,0,0,0.4)',
+            cursor: 'pointer'
+          }}
+          onClick={handleLogoClick}
+          title="Click to refresh data">
             <div style={{ transform: 'skewX(10deg)', display: 'flex', alignItems: 'center', gap: 40 }}>
-              <div style={{
+              <div className={dataUpdated ? 'logo-glow' : ''} style={{
                 fontSize: 54,
                 fontWeight: 900,
                 background: 'linear-gradient(135deg, #FFD700 0%, #FFA500 50%, #FF8C00 100%)',
@@ -69,6 +87,19 @@ export default function OverlayRiderRun() {
                 fontStyle: 'italic',
                 filter: 'drop-shadow(0 4px 8px rgba(0,0,0,0.8)) drop-shadow(0 2px 4px rgba(0,0,0,0.6)) drop-shadow(2px 2px 0 rgba(255,215,0,0.4)) drop-shadow(4px 4px 0 rgba(0,0,0,0.4))'
               }}>Mills Club</div>
+              <style jsx>{`
+                .logo-glow {
+                  animation: glow-pulse 0.8s ease-in-out;
+                }
+                @keyframes glow-pulse {
+                  0%, 100% {
+                    filter: drop-shadow(0 4px 8px rgba(0,0,0,0.8)) drop-shadow(0 2px 4px rgba(0,0,0,0.6)) drop-shadow(2px 2px 0 rgba(255,215,0,0.4)) drop-shadow(4px 4px 0 rgba(0,0,0,0.4));
+                  }
+                  50% {
+                    filter: drop-shadow(0 0 25px rgba(255,215,0,1)) drop-shadow(0 0 50px rgba(255,165,0,0.8)) drop-shadow(0 0 75px rgba(255,140,0,0.6)) drop-shadow(2px 2px 0 rgba(255,215,0,0.4));
+                  }
+                }
+              `}</style>
               <div style={{
                 background: 'rgba(255, 255, 255, 0.25)',
                 padding: '8px 20px',

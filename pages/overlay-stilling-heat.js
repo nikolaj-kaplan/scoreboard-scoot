@@ -1,24 +1,48 @@
 import { useSheetData } from '../lib/useSheetData';
-import { formatIfNumericDK } from '../lib/tableUtils';
 import ViewportClamp from '../lib/ViewportClamp';
 import { overlayTheme } from '../lib/overlayStyles';
 import { overlayConfig } from '../lib/overlayConfig';
+import LoadingSpinner from '../lib/LoadingSpinner';
+import StandingsTable from '../lib/StandingsTable';
+import { useState } from 'react';
 
 export default function OverlayStillingHeat() {
-  const { allData, loading } = useSheetData(5000);
+  const { allData, loading, refresh, dataUpdated } = useSheetData(5000);
+  const [isRefreshing, setIsRefreshing] = useState(false);
 
-  if (loading || !allData) {
-    return null;
+  const handleLogoClick = async () => {
+    setIsRefreshing(true);
+    try {
+      await fetch('/api/clear-cache', { method: 'POST' });
+      await refresh();
+    } catch (error) {
+      console.error('Error clearing cache:', error);
+    } finally {
+      setIsRefreshing(false);
+    }
+  };
+
+  if (loading || isRefreshing || !allData) {
+    return <LoadingSpinner />;
   }
 
   const rows = allData['Out1_Oversigt'] || [];
   if (rows.length < 4) return null;
 
-  // Extract "Stilling i Heat" section (columns 7-13)
+  // Extract "Stilling i Heat" section (columns 7-12)
   const title = rows[0]?.[7] || '';
   const heat = rows[0]?.[8] || '';
-  const headers = rows[3]?.slice(7, 14) || [];
-  const dataRows = rows.slice(4).map(row => row.slice(7, 14)).filter(row => row[1]);
+  
+  // Map data to standard format: rank, name, run1, run2, bestRun
+  const dataRows = rows.slice(4)
+    .map(row => ({
+      rank: row[7] || '-',   // Placering (column 7)
+      name: row[9] || '',    // Navn (column 9)
+      run1: row[10] || '',   // Run1 (column 10)
+      run2: row[11] || '',   // Run2 (column 11)
+      bestRun: row[12] || '' // Best Run (column 12)
+    }))
+    .filter(row => row.name);
 
   return (
     <ViewportClamp fixedTop={120} earlyThreshold={12} designWidth={1920} designHeight={1080} contentWidth="design">
@@ -109,11 +133,14 @@ export default function OverlayStillingHeat() {
           top: 26,
           right: 0,
           width: 660,
-          pointerEvents: 'none',
+          pointerEvents: 'auto',
           textAlign: 'right',
-          zIndex: 40
-        }}>
-          <div style={{
+          zIndex: 40,
+          cursor: 'pointer'
+        }}
+        onClick={handleLogoClick}
+        title="Click to refresh data">
+          <div className={dataUpdated ? 'logo-glow' : ''} style={{
             fontSize: 138,
             fontWeight: 900,
             background: 'linear-gradient(135deg, #FFD700 0%, #FFA500 50%, #FF8C00 100%)',
@@ -126,6 +153,19 @@ export default function OverlayStillingHeat() {
             transform: 'translateY(-55%)',
             filter: 'drop-shadow(0 16px 26px rgba(0,0,0,0.95)) drop-shadow(0 8px 14px rgba(0,0,0,0.7)) drop-shadow(3px 3px 0 rgba(255,215,0,0.55))'
           }}>Mills Club</div>
+          <style jsx>{`
+            .logo-glow {
+              animation: glow-pulse 0.8s ease-in-out;
+            }
+            @keyframes glow-pulse {
+              0%, 100% {
+                filter: drop-shadow(0 16px 26px rgba(0,0,0,0.95)) drop-shadow(0 8px 14px rgba(0,0,0,0.7)) drop-shadow(3px 3px 0 rgba(255,215,0,0.55));
+              }
+              50% {
+                filter: drop-shadow(0 0 30px rgba(255,215,0,1)) drop-shadow(0 0 60px rgba(255,165,0,0.8)) drop-shadow(0 0 90px rgba(255,140,0,0.6)) drop-shadow(3px 3px 0 rgba(255,215,0,0.55));
+              }
+            }
+          `}</style>
           <div style={{
             marginTop: -26,
             display: 'inline-block',
@@ -145,151 +185,7 @@ export default function OverlayStillingHeat() {
         </div>
 
         {/* Table */}
-        <table style={{ 
-          width: '100%',
-          borderCollapse: 'separate',
-          borderSpacing: '0 4px',
-          marginTop: 14
-        }}>
-          <thead>
-            <tr>
-              <th style={{ 
-                background: 'linear-gradient(to bottom, #1e40af 0%, #1e3a8a 100%)',
-                color: '#fff',
-                padding: overlayTheme.table.headerPadding.hash,
-                textAlign: 'center',
-                fontSize: overlayTheme.fonts.headerCell,
-                fontWeight: 700,
-                textTransform: 'uppercase',
-                // width removed to allow fluid expansion
-                boxShadow: 'inset 0 4px 0 rgba(255,255,255,0.3), inset 0 -5px 0 rgba(0,0,0,0.6), 0 4px 8px rgba(0,0,0,0.4)',
-                textShadow: '0 3px 6px rgba(0,0,0,0.8), 0 2px 4px rgba(0,0,0,0.6)'
-              }}>
-                #
-              </th>
-              <th style={{ 
-                background: 'linear-gradient(to bottom, #1e40af 0%, #1e3a8a 100%)',
-                color: '#fff',
-                padding: overlayTheme.table.headerPadding.name,
-                textAlign: 'left',
-                fontSize: overlayTheme.fonts.headerCell,
-                fontWeight: 700,
-                textTransform: 'uppercase',
-                boxShadow: 'inset 0 4px 0 rgba(255,255,255,0.3), inset 0 -5px 0 rgba(0,0,0,0.6), 0 4px 8px rgba(0,0,0,0.4)',
-                textShadow: '0 3px 6px rgba(0,0,0,0.8), 0 2px 4px rgba(0,0,0,0.6)'
-              }}>
-                {headers[2]}
-              </th>
-              <th style={{ 
-                background: 'linear-gradient(to bottom, #1e40af 0%, #1e3a8a 100%)',
-                color: '#fff',
-                padding: overlayTheme.table.headerPadding.run,
-                textAlign: 'center',
-                fontSize: overlayTheme.fonts.headerCell,
-                fontWeight: 700,
-                textTransform: 'uppercase',
-                // width removed
-                boxShadow: 'inset 0 4px 0 rgba(255,255,255,0.3), inset 0 -5px 0 rgba(0,0,0,0.6), 0 4px 8px rgba(0,0,0,0.4)',
-                textShadow: '0 3px 6px rgba(0,0,0,0.8), 0 2px 4px rgba(0,0,0,0.6)'
-              }}>
-                RUN 1
-              </th>
-              <th style={{ 
-                background: 'linear-gradient(to bottom, #1e40af 0%, #1e3a8a 100%)',
-                color: '#fff',
-                padding: overlayTheme.table.headerPadding.run,
-                textAlign: 'center',
-                fontSize: overlayTheme.fonts.headerCell,
-                fontWeight: 700,
-                textTransform: 'uppercase',
-                // width removed
-                boxShadow: 'inset 0 4px 0 rgba(255,255,255,0.3), inset 0 -5px 0 rgba(0,0,0,0.6), 0 4px 8px rgba(0,0,0,0.4)',
-                textShadow: '0 3px 6px rgba(0,0,0,0.8), 0 2px 4px rgba(0,0,0,0.6)'
-              }}>
-                RUN 2
-              </th>
-              <th style={{ 
-                background: 'linear-gradient(to bottom, #1e40af 0%, #1e3a8a 100%)',
-                color: '#fff',
-                padding: overlayTheme.table.headerPadding.best,
-                textAlign: 'center',
-                fontSize: overlayTheme.fonts.headerCell,
-                fontWeight: 700,
-                textTransform: 'uppercase',
-                // width removed
-                boxShadow: 'inset 0 4px 0 rgba(255,255,255,0.3), inset 0 -5px 0 rgba(0,0,0,0.6), 0 4px 8px rgba(0,0,0,0.4)',
-                textShadow: '0 3px 6px rgba(0,0,0,0.8), 0 2px 4px rgba(0,0,0,0.6)'
-              }}>
-                BEST RUN
-              </th>
-            </tr>
-          </thead>
-          <tbody>
-            {dataRows.map((row, i) => (
-              <tr key={i}>
-                <td style={{ 
-                  background: 'linear-gradient(to bottom, #1e40af 0%, #1e3a8a 100%)',
-                  color: '#fff',
-                  padding: overlayTheme.table.cellPadding.rank,
-                  fontSize: overlayTheme.fonts.rank,
-                  fontWeight: 900,
-                  textAlign: 'center',
-                  boxShadow: 'inset 0 4px 0 rgba(255,255,255,0.3), inset 0 -5px 0 rgba(0,0,0,0.6), 0 4px 8px rgba(0,0,0,0.3)',
-                  textShadow: '0 4px 8px rgba(0,0,0,0.8), 0 2px 4px rgba(0,0,0,0.6), 2px 2px 0 rgba(0,0,0,0.5)'
-                }}>
-                  {(() => { const v = row[0]; const n = parseInt(typeof v === 'string' ? v.replace(/[,\.].*$/, '') : v, 10); return isNaN(n) ? v : n; })()}
-                </td>
-                <td style={{ 
-                  background: 'linear-gradient(to bottom, #2a2a2a 0%, #1a1a1a 100%)',
-                  color: '#fff',
-                  padding: overlayTheme.table.cellPadding.name,
-                  fontSize: overlayTheme.fonts.name,
-                  fontWeight: 700,
-                  boxShadow: 'inset 0 3px 0 rgba(255,255,255,0.12), inset 0 -4px 0 rgba(0,0,0,0.5), 0 3px 6px rgba(0,0,0,0.3)',
-                  textShadow: '0 3px 6px rgba(0,0,0,0.8), 0 2px 4px rgba(0,0,0,0.6)'
-                }}>
-                  {formatIfNumericDK(row[2])}
-                </td>
-                <td style={{ 
-                  background: 'linear-gradient(to bottom, #2a2a2a 0%, #1a1a1a 100%)',
-                  color: '#fff',
-                  padding: overlayTheme.table.cellPadding.run,
-                  fontSize: overlayTheme.fonts.run,
-                  fontWeight: 600,
-                  textAlign: 'center',
-                  boxShadow: 'inset 0 3px 0 rgba(255,255,255,0.12), inset 0 -4px 0 rgba(0,0,0,0.5), 0 3px 6px rgba(0,0,0,0.3)',
-                  textShadow: '0 3px 6px rgba(0,0,0,0.8), 0 2px 4px rgba(0,0,0,0.6)'
-                }}>
-                  {formatIfNumericDK(row[3])}
-                </td>
-                <td style={{ 
-                  background: 'linear-gradient(to bottom, #2a2a2a 0%, #1a1a1a 100%)',
-                  color: '#fff',
-                  padding: overlayTheme.table.cellPadding.run,
-                  fontSize: overlayTheme.fonts.run,
-                  fontWeight: 600,
-                  textAlign: 'center',
-                  boxShadow: 'inset 0 3px 0 rgba(255,255,255,0.12), inset 0 -4px 0 rgba(0,0,0,0.5), 0 3px 6px rgba(0,0,0,0.3)',
-                  textShadow: '0 3px 6px rgba(0,0,0,0.8), 0 2px 4px rgba(0,0,0,0.6)'
-                }}>
-                  {formatIfNumericDK(row[4])}
-                </td>
-                <td style={{ 
-                  background: 'linear-gradient(to bottom, #2a2a2a 0%, #1a1a1a 100%)',
-                  color: '#fff',
-                  padding: overlayTheme.table.cellPadding.best,
-                  fontSize: overlayTheme.fonts.best,
-                  fontWeight: 900,
-                  textAlign: 'center',
-                  boxShadow: 'inset 0 3px 0 rgba(255,255,255,0.12), inset 0 -4px 0 rgba(0,0,0,0.5), 0 3px 6px rgba(0,0,0,0.3)',
-                  textShadow: '0 4px 8px rgba(0,0,0,0.8), 0 2px 4px rgba(0,0,0,0.6), 2px 2px 0 rgba(0,0,0,0.5)'
-                }}>
-                  {formatIfNumericDK(row[5])}
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+        <StandingsTable dataRows={dataRows} />
       </div>
     </ViewportClamp>
   );
