@@ -34,6 +34,7 @@ export default function OverlayRiderRun() {
   const riderInfo = {
     navn: rider[3] || '',
     række: rider[5] || '',
+    placering: rider[16] || '-',
     run1: rider[13] || '-',
     run2: rider[14] || '-',
     bestRun: rider[15] || '-'
@@ -128,6 +129,20 @@ export default function OverlayRiderRun() {
             </div>
           </div>
           <div style={{ display: 'flex', gap: 0, alignItems: 'stretch' }}>
+            <div style={{
+              background: 'linear-gradient(to bottom, #2a2a2a 0%, #1a1a1a 100%)',
+              padding: '18px 28px',
+              display: 'flex',
+              flexDirection: 'column',
+              justifyContent: 'center',
+              minWidth: 150,
+              textAlign: 'center',
+              borderLeft: '2px solid #000',
+              boxShadow: 'inset 0 3px 0 rgba(255,255,255,0.12), inset 0 -4px 0 rgba(0,0,0,0.5), 0 3px 6px rgba(0,0,0,0.3)'
+            }}>
+              <div style={{ color: '#888', fontSize: 16, marginBottom: 6, textTransform: 'uppercase', letterSpacing: 2, fontWeight: 700, textShadow: '0 2px 4px rgba(0,0,0,0.6)' }}>PLACERING</div>
+              <div style={{ color: '#fff', fontSize: 34, fontWeight: 900, textShadow: '0 3px 6px rgba(0,0,0,0.85), 0 2px 4px rgba(0,0,0,0.65)' }}>{riderInfo.placering}</div>
+            </div>
             <div style={{
               background: 'linear-gradient(to bottom, #2a2a2a 0%, #1a1a1a 100%)',
               padding: '18px 28px',

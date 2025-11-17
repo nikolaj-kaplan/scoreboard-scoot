@@ -48,8 +48,8 @@ export default function OverlayRiderPresentation() {
   };
 
   return (
-    <ViewportClamp fixedTop={120} earlyThreshold={12} designWidth={1920} designHeight={1080} contentWidth="design">
-      <div style={{ position: 'relative', width: '100%', maxWidth: 1880, margin: '10px 20px 50px', fontFamily: 'Arial, sans-serif', backgroundColor: overlayConfig.backgroundColor, minHeight: '100vh' }}>
+    <ViewportClamp fixedTop={80} earlyThreshold={60} designWidth={1920} designHeight={1080} contentWidth="design" center={true}>
+      <div style={{ position: 'relative', width: '100%', maxWidth: 1800, margin: '10px auto 50px', fontFamily: 'Arial, sans-serif', backgroundColor: overlayConfig.backgroundColor, minHeight: '100vh' }}>
         
         {/* Mills Club branding - top right */}
         <div style={{
@@ -223,7 +223,21 @@ export default function OverlayRiderPresentation() {
             )}
 
             {/* Scores */}
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 16 }}>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: 16 }}>
+              <div style={{ 
+                background: 'linear-gradient(to bottom, #1e40af 0%, #1e3a8a 100%)',
+                padding: '24px 20px',
+                textAlign: 'center',
+                boxShadow: 'inset 0 4px 0 rgba(255,255,255,0.3), inset 0 -5px 0 rgba(0,0,0,0.6), 0 4px 8px rgba(0,0,0,0.3)'
+              }}>
+                <div style={{ color: '#cce5ff', fontSize: 14, marginBottom: 8, textTransform: 'uppercase', letterSpacing: 2, fontWeight: 700 }}>
+                  PLACERING
+                </div>
+                <div style={{ color: '#fff', fontSize: 38, fontWeight: 900, textShadow: '0 4px 8px rgba(0,0,0,0.8)' }}>
+                  {riderData.Placering || '-'}
+                </div>
+              </div>
+
               <div style={{ 
                 background: 'linear-gradient(to bottom, #1e40af 0%, #1e3a8a 100%)',
                 padding: '24px 20px',

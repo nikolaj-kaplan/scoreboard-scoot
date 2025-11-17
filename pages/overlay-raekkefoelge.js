@@ -45,8 +45,8 @@ export default function OverlayRaekkefoelge() {
     .filter(row => row.name);
 
   return (
-    <ViewportClamp fixedTop={120} earlyThreshold={12} designWidth={1920} designHeight={1080} contentWidth="design">
-      <div style={{ position: 'relative', width: '100%', maxWidth: overlayTheme.container.maxWidth, margin: overlayTheme.container.margin, fontFamily: 'Arial, sans-serif', backgroundColor: overlayConfig.backgroundColor, minHeight: '100vh' }}>
+    <ViewportClamp fixedTop={80} earlyThreshold={60} designWidth={1920} designHeight={1080} contentWidth="design" center={true}>
+      <div style={{ position: 'relative', width: '100%', maxWidth: 1880, margin: '0 auto 30px', fontFamily: 'Arial, sans-serif', backgroundColor: overlayConfig.backgroundColor, minHeight: '100vh' }}>
         {/* Header with skewed blue bar */}
   <div style={{ position: 'relative', marginBottom: 18 }}>
           <div style={{
